@@ -12,15 +12,16 @@ body {
 #game-container {
     width: 80%;
     max-width: 800px;
-    border: 2px solid #f2f2f2;
+    border: 2px solid #00ffff;
     padding: 20px;
     text-align: center;
+    box-shadow: 0 0 20px #00ffff;
 }
 
 #title {
     font-size: 2.5em;
     margin-bottom: 20px;
-    color: #ff4d4d;
+    color: #00ffff;
 }
 
 #story {
@@ -38,7 +39,7 @@ body {
     width: 70%;
     padding: 10px;
     font-size: 1em;
-    border: 1px solid #f2f2f2;
+    border: 1px solid #00ffff;
     background-color: #333;
     color: #f2f2f2;
 }
@@ -46,13 +47,13 @@ body {
 #submit-button {
     padding: 10px 20px;
     font-size: 1em;
-    border: 1px solid #f2f2f2;
+    border: 1px solid #00ffff;
     background-color: #333;
     color: #f2f2f2;
     cursor: pointer;
 }
 
 #submit-button:hover {
-    background-color: #ff4d4d;
+    background-color: #00ffff;
     color: #1a1a1a;
 }
