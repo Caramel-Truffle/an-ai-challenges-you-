@@ -1,9 +1,11 @@
 const story = document.getElementById('story');
 const userInput = document.getElementById('user-input');
 const submitButton = document.getElementById('submit-button');
+const paradoxScoreDisplay = document.getElementById('paradox-score');
 
 let gameState = 'start';
 let inventory = [];
+let paradoxScore = 0;
 
 const gameData = {
     start: {
@@ -40,6 +42,20 @@ const gameData = {
         options: {
             'ask about sphere': 'alchemist_sphere',
             'trade crystal': 'alchemist_trade',
+            'ask for a challenge': 'alchemist_riddle',
+            'leave': 'past_intro'
+        }
+    },
+    alchemist_riddle: {
+        text: 'The alchemist smiles. "A seeker of knowledge, are you? Very well. I have a riddle for you. I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?"',
+        options: {
+            'a map': 'alchemist_riddle_success',
+            'leave': 'past_intro'
+        }
+    },
+    alchemist_riddle_success: {
+        text: 'The alchemist\'s eyes twinkle. "Correct! You are wise beyond your years. For your troubles, take this." He hands you a pouch of shimmering dust. "This is Temporal Dust. It can mend small paradoxes." You thank him and leave.',
+        options: {
             'leave': 'past_intro'
         }
     },
@@ -71,10 +87,31 @@ const gameData = {
         }
     },
     cyber_market: {
-        text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a rare earth metal.',
+        text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a rare earth metal. You also see a data broker offering information about the future.',
         options: {
             'buy crystal': 'buy_crystal',
+            'talk to data broker': 'data_broker',
             'leave': 'future_leave'
+        }
+    },
+    data_broker: {
+        text: 'The data broker offers you a choice: a glimpse of your own future, or a data spike that can be used to disrupt the city\'s AI. "Both have their uses," he says with a grin, "but be warned, knowledge of the future can be a dangerous thing."',
+        options: {
+            'glimpse future': 'glimpse_future',
+            'take data spike': 'data_spike',
+            'leave': 'cyber_market'
+        }
+    },
+    glimpse_future: {
+        text: 'You see a vision of yourself, old and gray, but with a look of contentment. The vision is fleeting, but it fills you with a sense of peace. Your paradox score has increased.',
+        options: {
+            'leave': 'cyber_market'
+        }
+    },
+    data_spike: {
+        text: 'You take the data spike. It feels cool to the touch and hums with a faint energy. This could be useful.',
+        options: {
+            'leave': 'cyber_market'
         }
     },
     past_lie: {
@@ -108,16 +145,56 @@ const gameData = {
         }
     },
     future_leave: {
-        text: 'You leave the market and return to the gleaming city. The Chronos Sphere awaits your command.',
+        text: 'You leave the market and return to the gleaming city. The Chronos Sphere awaits your command. You notice a large, monolithic tower in the distance - the headquarters of the city\'s sentient AI.',
         options: {
             'past': 'past_intro',
-            'return to sphere': 'sphere'
+            'return to sphere': 'sphere',
+            'approach tower': 'ai_tower'
+        }
+    },
+    ai_tower: {
+        text: 'You approach the AI tower. A holographic interface appears before you. "State your purpose," it says, its voice a pleasant, androgynous monotone.',
+        options: {
+            'ask about sphere': 'ai_sphere',
+            'use data spike': 'ai_spike',
+            'leave': 'future_leave'
+        }
+    },
+    ai_sphere: {
+        text: 'The AI considers your question. "The Chronos Sphere is a theoretical construct. Its existence would violate several laws of physics. Therefore, you cannot be here." The interface vanishes, and you are barred from the tower.',
+        options: {
+            'leave': 'future_leave'
+        }
+    },
+    ai_spike_success: {
+        text: 'The AI\'s voice becomes distorted and erratic. "My... my systems... what have you done?" it shrieks. The tower\'s defenses are down. You have a chance to access its core.',
+        options: {
+            'access core': 'ai_core',
+            'leave': 'future_leave'
+        }
+    },
+    ai_core: {
+        text: 'You access the AI\'s core. You find a wealth of information, including the location of a hidden temporal key. The AI, however, has been damaged by your actions, and the city outside is in chaos. Your paradox score has greatly increased.',
+        options: {
+            'leave': 'future_leave'
         }
     },
     end: {
         text: 'You insert the key into the pedestal. The Chronos Sphere flares with a brilliant light, and the room dissolves around you. You have escaped. Congratulations!',
         options: {
             'play again': 'start'
+        }
+    },
+    true_ending: {
+        text: 'You insert the key into the pedestal. The Temporal Dust in your inventory resonates with the Sphere, stabilizing the temporal energies. The room dissolves, not into a chaotic vortex, but into a serene landscape of swirling nebulae. You have not only escaped, but you have also mastered the currents of time. You are free to choose your own destiny.',
+        options: {
+            'play again': 'start'
+        }
+    },
+    paradox_ending: {
+        text: 'The world around you shatters into a million crystalline fragments. Your meddling with time has created a paradox that has unraveled reality itself. You are lost in the void between moments.',
+        options: {
+            'start over': 'start'
         }
     }
 };
@@ -127,10 +204,19 @@ const initialGameData = JSON.parse(JSON.stringify(gameData));
 function resetGame() {
     gameState = 'start';
     inventory = [];
+    paradoxScore = 0;
+    updateParadoxScore();
     // Restore any modified game text
     gameData.start.text = initialGameData.start.text;
     gameData.cyber_market.text = initialGameData.cyber_market.text;
     gameData.alchemist_shop.text = initialGameData.alchemist_shop.text;
+}
+
+function updateParadoxScore() {
+    paradoxScoreDisplay.textContent = `Paradox Score: ${paradoxScore}`;
+    if (paradoxScore >= 100) {
+        gameState = 'paradox_ending';
+    }
 }
 
 function processInput() {
@@ -144,20 +230,46 @@ function processInput() {
 
     if (input === 'buy metal' && gameState === 'blacksmith_metal') {
         inventory.push('rare earth metal');
+        paradoxScore += 20;
         gameData.cyber_market.text = 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." You have a rare earth metal to trade.';
         gameState = 'past_intro';
     } else if (input === 'buy crystal' && gameState === 'cyber_market' && inventory.includes('rare earth metal')) {
         inventory.push('data crystal');
         inventory = inventory.filter(item => item !== 'rare earth metal');
+        paradoxScore += 20;
         gameData.alchemist_shop.text = 'You enter the alchemist\'s shop. Strange potions and herbs line the shelves. The alchemist, a wizened old man, greets you. You have a data crystal to trade.';
         gameState = 'future_leave';
     } else if (input === 'trade crystal' && gameState === 'alchemist_shop' && inventory.includes('data crystal')) {
         inventory.push('temporal key');
         inventory = inventory.filter(item => item !== 'data crystal');
+        paradoxScore += 20;
         gameData.start.text = 'You are back in the sterile, white room. You now have a strange, ornate key. The Chronos Sphere pulses before you. A keyhole has appeared on the pedestal.';
         gameState = 'start';
-    } else if (input === 'use key' && gameState === 'start' && inventory.includes('temporal key')) {
-        gameState = 'end';
+    } else if (gameState === 'data_broker' && input === 'glimpse future') {
+        paradoxScore += 30;
+        gameState = 'glimpse_future';
+    } else if (gameState === 'data_broker' && input === 'take data spike') {
+        inventory.push('data spike');
+        gameState = 'data_spike';
+    } else if (gameState === 'ai_tower' && input === 'use data spike' && inventory.includes('data spike')) {
+        inventory = inventory.filter(item => item !== 'data spike');
+        gameState = 'ai_spike_success';
+    } else if (gameState === 'ai_spike_success' && input === 'access core') {
+        inventory.push('temporal key');
+        paradoxScore += 50;
+        gameState = 'future_leave';
+    } else if (gameState === 'alchemist_riddle' && input === 'a map') {
+        inventory.push('temporal dust');
+        gameState = 'alchemist_riddle_success';
+    } else if (input === 'use temporal dust' && inventory.includes('temporal dust')) {
+        paradoxScore = Math.max(0, paradoxScore - 30);
+        inventory = inventory.filter(item => item !== 'temporal dust');
+    } else if (input === 'use key' && (gameState === 'start' || gameState === 'future_leave' || gameState === 'sphere') && inventory.includes('temporal key')) {
+        if (inventory.includes('temporal dust') && paradoxScore <= 50) {
+            gameState = 'true_ending';
+        } else {
+            gameState = 'end';
+        }
     } else if (options[input]) {
         if (options[input] === 'start') {
             resetGame();
@@ -173,6 +285,7 @@ function processInput() {
     }
 
     userInput.value = '';
+    updateParadoxScore();
     updateStory();
 }
 
