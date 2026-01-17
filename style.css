@@ -30,6 +30,12 @@ body {
     margin-bottom: 20px;
 }
 
+#paradox-score {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: #ff4d4d;
+}
+
 #input-container {
     display: flex;
     justify-content: center;
