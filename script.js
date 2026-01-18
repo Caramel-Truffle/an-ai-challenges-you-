@@ -22,14 +22,100 @@ const gameData = {
         }
     },
     sphere: {
-        text: 'As you touch the sphere, your vision blurs. You feel a disorienting pull, and the world around you dissolves into a vortex of light and color. You have activated the Chronos Sphere. Where will you go? (past/future)',
+        text: 'As you touch the sphere, your vision blurs. You feel a disorienting pull, and the world around you dissolves into a vortex of light and color. You have activated the Chronos Sphere. Where will you go? (dino/past/future)',
         options: {
+            'dino': 'dino_era_intro',
             'past': 'past_intro',
             'future': 'future_intro'
         }
     },
+    dino_era_intro: {
+        text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, and a murky swamp.',
+        options: {
+            'jungle path': 'jungle_path',
+            'cliff face': 'cliff_face',
+            'swamp': 'swamp',
+            'return to sphere': 'sphere'
+        }
+    },
+    jungle_path: {
+        text: 'You follow the jungle path. The path is overgrown and treacherous. You hear the rustling of unseen creatures in the undergrowth. After a short walk, you come to a clearing. In the clearing, you see a group of dinosaurs: a Stegosaurus, a Triceratops, and a Velociraptor. They seem to be communicating with each other. There is a strange, pulsating plant in the center of the clearing.',
+        options: {
+            'approach stegosaurus': 'dino_puzzle_stegosaurus',
+            'approach triceratops': 'dino_puzzle_fail',
+            'approach raptor': 'dino_puzzle_fail',
+            'leave': 'dino_era_intro'
+        }
+    },
+    dino_puzzle_stegosaurus: {
+        text: 'You approach the Stegosaurus. It watches you with its small, intelligent eyes. It seems calm. The Triceratops now seems to be watching you expectantly.',
+        options: {
+            'approach triceratops': 'dino_puzzle_triceratops',
+            'approach raptor': 'dino_puzzle_fail',
+            'leave': 'dino_era_intro'
+        }
+    },
+    dino_puzzle_triceratops: {
+        text: 'You approach the Triceratops. It lowers its massive, horned head in a gesture of respect. The Velociraptor now seems to be observing you with a calculating gaze.',
+        options: {
+            'approach raptor': 'dino_puzzle_raptor',
+            'leave': 'dino_era_intro'
+        }
+    },
+    dino_puzzle_raptor: {
+        text: 'You approach the Velociraptor. It lets out a series of clicks and whistles. The other dinosaurs seem to relax. The Velociraptor gestures with its head towards the strange plant. You have gained the dinosaurs\' trust.',
+        options: {
+            'take plant': 'dino_puzzle_success',
+            'leave': 'dino_era_intro'
+        }
+    },
+    dino_puzzle_success: {
+        text: 'You take the strange plant. It feels warm to the touch and emits a low, humming sound. You have acquired a Dino-Lure.',
+        options: {
+            'leave': 'dino_era_intro'
+        }
+    },
+    dino_puzzle_fail: {
+        text: 'You approach the dinosaur, but it becomes agitated. The other dinosaurs also become hostile. You are forced to retreat. The dinosaurs have reset their positions.',
+        options: {
+            'leave': 'jungle_path'
+        }
+    },
+    cliff_face: {
+        text: 'You approach the cliff face. A massive Tyrannosaurus Rex blocks your path. It seems to be guarding something in a cave behind it. It hasn\'t seen you yet.',
+        options: {
+            'use dino-lure': 'trex_distracted',
+            'sneak past': 'trex_fail',
+            'leave': 'dino_era_intro'
+        }
+    },
+    trex_distracted: {
+        text: 'You use the Dino-Lure. The T-Rex is drawn to the strange plant\'s scent and sound. It lumbers away from the cave to investigate. The path is clear.',
+        options: {
+            'enter cave': 'cave',
+            'leave': 'dino_era_intro'
+        }
+    },
+    trex_fail: {
+        text: 'You try to sneak past the T-Rex, but it spots you. You are not fast enough. You have reached a dead end.',
+        options: {
+            'start over': 'start'
+        }
+    },
+    cave: {
+        text: 'You enter the cave. Inside, you find a strange, alien artifact. It seems to be a piece of the Chronos Sphere. You take it.',
+        options: {
+            'leave': 'dino_era_intro'
+        }
+    },
+    swamp: {
+        text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water. You see a half-submerged skeleton of a massive creature.',
+        options: {
+            'leave': 'dino_era_intro'
+        }
+    },
     past_intro: {
-        text: 'You find yourself in a bustling medieval marketplace. The air is thick with the smell of spices and livestock. Your sudden appearance has not gone unnoticed. A guard approaches you, but you manage to slip into the crowd. You see a blacksmith\'s forge, an alchemist\'s shop, and a tavern. You can also feel the pull of the Chronos Sphere.',
+        text: 'The scent of hay and woodsmoke fills the air. You stand in a bustling medieval marketplace, the cobblestones beneath your feet worn smooth by centuries of foot traffic. Merchants hawk their wares from colorful stalls, and the air buzzes with a dozen different languages. Your sudden appearance in a flash of light has not gone unnoticed. A guard in polished steel armor eyes you suspiciously, but you manage to slip into the throng of people. You see a blacksmith\'s forge, its chimney belching black smoke, an alchemist\'s shop with a sign depicting a bubbling potion, and a raucous tavern with music spilling out of its open door. The Chronos Sphere hums gently, a familiar anchor in this unfamiliar time.',
         options: {
             'blacksmith': 'blacksmith',
             'alchemist': 'alchemist_shop',
@@ -80,7 +166,7 @@ const gameData = {
         }
     },
     future_intro: {
-        text: 'You are in a sleek, chrome city. Flying vehicles zip past, and robots attend to the needs of the populace. A hovering drone scans you, but you manage to evade it by ducking into a crowded cyber-market. You see stalls selling everything from bio-enhancements to data crystals.',
+        text: 'The city is a symphony of chrome and neon. Towering skyscrapers pierce the clouds, their surfaces reflecting the perpetual twilight of the city\'s artificial sky. Flying vehicles, sleek and silent, weave between the buildings in intricate patterns. Robots of all shapes and sizes glide along the pristine sidewalks, attending to the needs of the genetically-enhanced populace. A hovering drone, its single red eye glowing ominously, swivels to scan you. You duck into a crowded cyber-market, the air thick with the scent of ozone and synthetic street food. Stalls overflow with holographic advertisements for everything from bio-enhancements to black-market data crystals.',
         options: {
             'market': 'cyber_market',
             'leave': 'future_leave'
@@ -219,6 +305,100 @@ function updateParadoxScore() {
     }
 }
 
+const commands = {
+    'buy metal': () => {
+        if (gameState === 'blacksmith_metal') {
+            inventory.push('rare earth metal');
+            paradoxScore += 20;
+            gameData.cyber_market.text = 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." You have a rare earth metal to trade.';
+            gameState = 'past_intro';
+        }
+    },
+    'buy crystal': () => {
+        if (gameState === 'cyber_market' && inventory.includes('rare earth metal')) {
+            inventory.push('data crystal');
+            inventory = inventory.filter(item => item !== 'rare earth metal');
+            paradoxScore += 20;
+            gameData.alchemist_shop.text = 'You enter the alchemist\'s shop. Strange potions and herbs line the shelves. The alchemist, a wizened old man, greets you. You have a data crystal to trade.';
+            gameState = 'future_leave';
+        }
+    },
+    'trade crystal': () => {
+        if (gameState === 'alchemist_shop' && inventory.includes('data crystal')) {
+            inventory.push('temporal key');
+            inventory = inventory.filter(item => item !== 'data crystal');
+            paradoxScore += 20;
+            gameData.start.text = 'You are back in the sterile, white room. You now have a strange, ornate key. The Chronos Sphere pulses before you. A keyhole has appeared on the pedestal.';
+            gameState = 'start';
+        }
+    },
+    'glimpse future': () => {
+        if (gameState === 'data_broker') {
+            paradoxScore += 30;
+            gameState = 'glimpse_future';
+        }
+    },
+    'take data spike': () => {
+        if (gameState === 'data_broker') {
+            inventory.push('data spike');
+            gameState = 'data_spike';
+        }
+    },
+    'use data spike': () => {
+        if (gameState === 'ai_tower' && inventory.includes('data spike')) {
+            inventory = inventory.filter(item => item !== 'data spike');
+            gameState = 'ai_spike_success';
+        }
+    },
+    'access core': () => {
+        if (gameState === 'ai_spike_success') {
+            inventory.push('temporal key');
+            paradoxScore += 50;
+            gameState = 'future_leave';
+        }
+    },
+    'a map': () => {
+        if (gameState === 'alchemist_riddle') {
+            inventory.push('temporal dust');
+            gameState = 'alchemist_riddle_success';
+        }
+    },
+    'use temporal dust': () => {
+        if (inventory.includes('temporal dust')) {
+            paradoxScore = Math.max(0, paradoxScore - 30);
+            inventory = inventory.filter(item => item !== 'temporal dust');
+        }
+    },
+    'use key': () => {
+        if ((gameState === 'start' || gameState === 'future_leave' || gameState === 'sphere') && inventory.includes('temporal key')) {
+            if (inventory.includes('temporal dust') && paradoxScore <= 50) {
+                gameState = 'true_ending';
+            } else {
+                gameState = 'end';
+            }
+        }
+    },
+    'take plant': () => {
+        if (gameState === 'dino_puzzle_raptor') {
+            inventory.push('dino-lure');
+            gameState = 'dino_puzzle_success';
+        }
+    },
+    'use dino-lure': () => {
+        if (gameState === 'cliff_face' && inventory.includes('dino-lure')) {
+            inventory = inventory.filter(item => item !== 'dino-lure');
+            gameState = 'trex_distracted';
+        }
+    },
+    'enter cave': () => {
+        if (gameState === 'trex_distracted') {
+            inventory.push('sphere piece');
+            paradoxScore += 40;
+            gameState = 'cave';
+        }
+    }
+};
+
 function processInput() {
     const input = userInput.value.toLowerCase();
     const options = gameData[gameState].options;
@@ -228,48 +408,8 @@ function processInput() {
         existingError.remove();
     }
 
-    if (input === 'buy metal' && gameState === 'blacksmith_metal') {
-        inventory.push('rare earth metal');
-        paradoxScore += 20;
-        gameData.cyber_market.text = 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." You have a rare earth metal to trade.';
-        gameState = 'past_intro';
-    } else if (input === 'buy crystal' && gameState === 'cyber_market' && inventory.includes('rare earth metal')) {
-        inventory.push('data crystal');
-        inventory = inventory.filter(item => item !== 'rare earth metal');
-        paradoxScore += 20;
-        gameData.alchemist_shop.text = 'You enter the alchemist\'s shop. Strange potions and herbs line the shelves. The alchemist, a wizened old man, greets you. You have a data crystal to trade.';
-        gameState = 'future_leave';
-    } else if (input === 'trade crystal' && gameState === 'alchemist_shop' && inventory.includes('data crystal')) {
-        inventory.push('temporal key');
-        inventory = inventory.filter(item => item !== 'data crystal');
-        paradoxScore += 20;
-        gameData.start.text = 'You are back in the sterile, white room. You now have a strange, ornate key. The Chronos Sphere pulses before you. A keyhole has appeared on the pedestal.';
-        gameState = 'start';
-    } else if (gameState === 'data_broker' && input === 'glimpse future') {
-        paradoxScore += 30;
-        gameState = 'glimpse_future';
-    } else if (gameState === 'data_broker' && input === 'take data spike') {
-        inventory.push('data spike');
-        gameState = 'data_spike';
-    } else if (gameState === 'ai_tower' && input === 'use data spike' && inventory.includes('data spike')) {
-        inventory = inventory.filter(item => item !== 'data spike');
-        gameState = 'ai_spike_success';
-    } else if (gameState === 'ai_spike_success' && input === 'access core') {
-        inventory.push('temporal key');
-        paradoxScore += 50;
-        gameState = 'future_leave';
-    } else if (gameState === 'alchemist_riddle' && input === 'a map') {
-        inventory.push('temporal dust');
-        gameState = 'alchemist_riddle_success';
-    } else if (input === 'use temporal dust' && inventory.includes('temporal dust')) {
-        paradoxScore = Math.max(0, paradoxScore - 30);
-        inventory = inventory.filter(item => item !== 'temporal dust');
-    } else if (input === 'use key' && (gameState === 'start' || gameState === 'future_leave' || gameState === 'sphere') && inventory.includes('temporal key')) {
-        if (inventory.includes('temporal dust') && paradoxScore <= 50) {
-            gameState = 'true_ending';
-        } else {
-            gameState = 'end';
-        }
+    if (commands[input]) {
+        commands[input]();
     } else if (options[input]) {
         if (options[input] === 'start') {
             resetGame();
