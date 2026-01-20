@@ -9,7 +9,7 @@ let paradoxScore = 0;
 
 const gameData = {
     start: {
-        text: 'You find yourself in a sterile, white room. A single pedestal stands in the center, upon which rests a pulsating, crystalline sphere. A voice echoes in your mind: "The Chronos Sphere is your key and your prison. To escape, you must navigate the currents of time."',
+        text: 'You find yourself in a sterile, white room. A single pedestal stands in the center, upon which rests a pulsating, crystalline sphere. A voice echoes in your mind: "The Chronos Sphere is your key and your prison. To truly escape and master time, you must assemble the Temporal Stabilizer. Its components are scattered across time. Only then can you control the Sphere."',
         options: {
             'touch sphere': 'sphere',
             'look around': 'room'
@@ -30,12 +30,33 @@ const gameData = {
         }
     },
     dino_era_intro: {
-        text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, and a murky swamp.',
+        text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, a murky swamp, and a strange metallic glint in the distance.',
         options: {
             'jungle path': 'jungle_path',
             'cliff face': 'cliff_face',
             'swamp': 'swamp',
+            'investigate glint': 'crashed_ship',
             'return to sphere': 'sphere'
+        }
+    },
+    crashed_ship: {
+        text: 'You follow the glint and find a small, heavily damaged alien scout ship half-buried in the mud. The entry hatch is open. Inside, a console is flickering with a faint light.',
+        options: {
+            'enter ship': 'ship_console',
+            'leave': 'dino_era_intro'
+        }
+    },
+    ship_console: {
+        text: 'You enter the ship. The console displays a sequence of three alien symbols. A keypad below the screen shows the same symbols. It seems to be a simple pattern-matching puzzle. The symbols are: Zorp, Gleep, Floop.',
+        options: {
+            'press zorp gleep floop': 'ship_puzzle_success',
+            'leave': 'dino_era_intro'
+        }
+    },
+    ship_puzzle_success: {
+        text: 'You press the symbols in the correct order. The console beeps and a small compartment opens, revealing a small, intricate device. You have acquired the Ancient CPU.',
+        options: {
+            'leave': 'dino_era_intro'
         }
     },
     jungle_path: {
@@ -120,7 +141,28 @@ const gameData = {
             'blacksmith': 'blacksmith',
             'alchemist': 'alchemist_shop',
             'tavern': 'tavern',
+            'visit monastery': 'monastery',
             'return to sphere': 'sphere'
+        }
+    },
+    monastery: {
+        text: 'You leave the bustling marketplace and follow a winding path up a hill to a secluded monastery. The monks are known for their wisdom and their collection of rare artifacts. An elderly monk greets you at the gate.',
+        options: {
+            'ask about artifacts': 'monastery_artifacts',
+            'leave': 'past_intro'
+        }
+    },
+    monastery_artifacts: {
+        text: 'The monk leads you to a room filled with ancient relics. He points to a faintly glowing crystal on a pedestal. "This is the Pulsating Crystal," he says. "It is said to resonate with the echoes of time. To prove your worthiness to possess it, you must answer a riddle: What has an eye, but cannot see?"',
+        options: {
+            'a needle': 'monastery_puzzle_success',
+            'leave': 'past_intro'
+        }
+    },
+    monastery_puzzle_success: {
+        text: 'The monk smiles. "You are wise. The crystal is yours." He hands you the Pulsating Crystal.',
+        options: {
+            'leave': 'past_intro'
         }
     },
     alchemist_shop: {
@@ -177,7 +219,35 @@ const gameData = {
         options: {
             'buy crystal': 'buy_crystal',
             'talk to data broker': 'data_broker',
+            'visit clinic': 'black_market_clinic',
             'leave': 'future_leave'
+        }
+    },
+    black_market_clinic: {
+        text: 'You duck into a dimly lit alley and find a black market clinic. A cybernetically enhanced doctor greets you. "Here for an upgrade?" she asks, her voice a metallic rasp.',
+        options: {
+            'ask about rare tech': 'clinic_tech',
+            'leave': 'cyber_market'
+        }
+    },
+    clinic_tech: {
+        text: 'You ask the doctor about rare technology. She smirks. "I have something special, but it will cost you. I need a favor. There is a rival data broker who has a valuable data chip. Get it for me, and I will give you a Stabilizing Agent." She gives you a device to disable the broker\'s security.',
+        options: {
+            'accept mission': 'accept_mission',
+            'leave': 'cyber_market'
+        }
+    },
+    accept_mission: {
+        text: 'You accept the mission. The data broker\'s office is in a nearby skyscraper. You use the device to disable the security and find the data chip. You return to the clinic and give the chip to the doctor.',
+        options: {
+            'complete mission': 'clinic_puzzle_success',
+            'leave': 'cyber_market'
+        }
+    },
+    clinic_puzzle_success: {
+        text: 'The doctor smiles. "A deal is a deal." She hands you a vial of shimmering liquid. "This is a Stabilizing Agent. It will help you control the Chronos Sphere." You have acquired the Stabilizing Agent.',
+        options: {
+            'leave': 'cyber_market'
         }
     },
     data_broker: {
@@ -272,7 +342,13 @@ const gameData = {
         }
     },
     true_ending: {
-        text: 'You insert the key into the pedestal. The Temporal Dust in your inventory resonates with the Sphere, stabilizing the temporal energies. The room dissolves, not into a chaotic vortex, but into a serene landscape of swirling nebulae. You have not only escaped, but you have also mastered the currents of time. You are free to choose your own destiny.',
+        text: 'You insert the key into the pedestal. The Temporal Stabilizer components in your inventory resonate with the Sphere, stabilizing the temporal energies. The room dissolves, not into a chaotic vortex, but into a serene landscape of swirling nebulae. You have escaped and mastered the currents of time. You are free to choose your own destiny.',
+        options: {
+            'play again': 'start'
+        }
+    },
+    master_of_time_ending: {
+        text: 'You insert the key into the pedestal. The Temporal Stabilizer components resonate with the Sphere, and your low paradox score allows for perfect synchronization. The room dissolves, and you find yourself not just in a serene landscape, but at the very heart of time itself. You have become a master of time, able to travel to any point in history at will. The universe is your playground.',
         options: {
             'play again': 'start'
         }
@@ -371,8 +447,13 @@ const commands = {
     },
     'use key': () => {
         if ((gameState === 'start' || gameState === 'future_leave' || gameState === 'sphere') && inventory.includes('temporal key')) {
-            if (inventory.includes('temporal dust') && paradoxScore <= 50) {
-                gameState = 'true_ending';
+            const hasAllStabilizerParts = inventory.includes('Ancient CPU') && inventory.includes('Pulsating Crystal') && inventory.includes('Stabilizing Agent');
+            if (hasAllStabilizerParts) {
+                if (paradoxScore <= 20) {
+                    gameState = 'master_of_time_ending';
+                } else {
+                    gameState = 'true_ending';
+                }
             } else {
                 gameState = 'end';
             }
@@ -396,32 +477,65 @@ const commands = {
             paradoxScore += 40;
             gameState = 'cave';
         }
+    },
+    'press zorp gleep floop': () => {
+        if (gameState === 'ship_console') {
+            inventory.push('Ancient CPU');
+            gameState = 'ship_puzzle_success';
+        }
+    },
+    'a needle': () => {
+        if (gameState === 'monastery_artifacts') {
+            inventory.push('Pulsating Crystal');
+            gameState = 'monastery_puzzle_success';
+        }
+    },
+    'complete mission': () => {
+        if (gameState === 'accept_mission') {
+            inventory.push('Stabilizing Agent');
+            gameState = 'clinic_puzzle_success';
+        }
     }
 };
 
-function processInput() {
-    const input = userInput.value.toLowerCase();
-    const options = gameData[gameState].options;
-
-    const existingError = story.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
-    }
-
+function handleCommand(input) {
     if (commands[input]) {
         commands[input]();
-    } else if (options[input]) {
+        return true;
+    }
+    return false;
+}
+
+function handleOption(input) {
+    const options = gameData[gameState].options;
+    if (options[input]) {
         if (options[input] === 'start') {
             resetGame();
         } else {
             gameState = options[input];
         }
-    } else {
-        const p = document.createElement('p');
-        p.className = 'error-message';
-        p.style.color = '#ff4d4d';
-        p.textContent = 'Invalid command. Try again.';
-        story.appendChild(p);
+        return true;
+    }
+    return false;
+}
+
+function handleInvalidInput() {
+    const p = document.createElement('p');
+    p.className = 'error-message';
+    p.style.color = '#ff4d4d';
+    p.textContent = 'Invalid command. Try again.';
+    story.appendChild(p);
+}
+
+function processInput() {
+    const input = userInput.value.toLowerCase();
+    const existingError = story.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+
+    if (!handleCommand(input) && !handleOption(input)) {
+        handleInvalidInput();
     }
 
     userInput.value = '';
