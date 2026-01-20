@@ -130,9 +130,30 @@ const gameData = {
         }
     },
     swamp: {
-        text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water. You see a half-submerged skeleton of a massive creature.',
+        text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water. In the middle of a deep pool, a half-submerged skeleton of a massive creature rests. In one of its eye sockets, you spot a faint, pulsating light. Sturdy vines hang from the trees overhead.',
+        options: {
+            'use vines': 'swing_to_skeleton',
+            'swim': 'swim_fail',
+            'leave': 'dino_era_intro'
+        }
+    },
+    swing_to_skeleton: {
+        text: 'You grab a thick vine and swing out over the murky water. You land silently on the creature\'s massive skull, right next to the glowing crystal.',
+        options: {
+            'take crystal': 'crystal_acquired',
+            'leave': 'dino_era_intro'
+        }
+    },
+    crystal_acquired: {
+        text: 'You carefully pry the Pulsating Crystal from the eye socket. It hums with a powerful energy. You now have a key component for the Temporal Stabilizer. You swing back to solid ground.',
         options: {
             'leave': 'dino_era_intro'
+        }
+    },
+    swim_fail: {
+        text: 'You try to swim across, but the moment you enter the water, a large, unseen creature pulls you under. You have reached a dead end.',
+        options: {
+            'start over': 'start'
         }
     },
     past_intro: {
@@ -171,7 +192,15 @@ const gameData = {
             'ask about sphere': 'alchemist_sphere',
             'trade crystal': 'alchemist_trade',
             'ask for a challenge': 'alchemist_riddle',
+            'ask about synthesis': 'alchemist_synthesis',
             'leave': 'past_intro'
+        }
+    },
+    alchemist_synthesis: {
+        text: 'You ask about synthesis. The alchemist\'s eyes gleam with interest. "Ah, you are interested in the higher arts. I can create a powerful Stabilizing Agent, but I require a potent energy source and a catalyst. The Temporal Dust I gave you can serve as the catalyst, but you will need to find an energy source on your own."',
+        options: {
+            'synthesize agent': 'synthesize_agent',
+            'leave': 'alchemist_shop'
         }
     },
     alchemist_riddle: {
@@ -201,21 +230,36 @@ const gameData = {
         }
     },
     blacksmith_metal: {
-        text: 'You ask the blacksmith about rare metals. He shows you a strange, glowing ore. "Found this in a crater," he says. "Don\'t know what it is, but it\'s harder than any steel. You can have it for a price."',
+        text: 'You ask the blacksmith about rare metals. He shows you a strange, intricate metal object with geometric patterns etched into its surface. "Found this in a crater," he says. "It\'s harder than any steel I\'ve ever seen, and it hums with a faint warmth. You can have it for a price."',
         options: {
-            'buy metal': 'buy_metal',
+            'buy cpu': 'buy_cpu',
             'leave': 'past_intro'
         }
     },
     future_intro: {
-        text: 'The city is a symphony of chrome and neon. Towering skyscrapers pierce the clouds, their surfaces reflecting the perpetual twilight of the city\'s artificial sky. Flying vehicles, sleek and silent, weave between the buildings in intricate patterns. Robots of all shapes and sizes glide along the pristine sidewalks, attending to the needs of the genetically-enhanced populace. A hovering drone, its single red eye glowing ominously, swivels to scan you. You duck into a crowded cyber-market, the air thick with the scent of ozone and synthetic street food. Stalls overflow with holographic advertisements for everything from bio-enhancements to black-market data crystals.',
+        text: 'The city is a symphony of chrome and neon. Towering skyscrapers pierce the clouds, their surfaces reflecting the perpetual twilight of the city\'s artificial sky. Flying vehicles, sleek and silent, weave between the buildings in intricate patterns. Robots of all shapes and sizes glide along the pristine sidewalks, attending to the needs of the genetically-enhanced populace. A hovering drone, its single red eye glowing ominously, swivels to scan you. You duck into a crowded cyber-market, the air thick with the scent of ozone and synthetic street food. Stalls overflow with holographic advertisements for everything from bio-enhancements to black-market data crystals. You also spot a discreet sign for a "Temporal Mechanics Lab".',
         options: {
             'market': 'cyber_market',
+            'enter lab': 'tech_lab',
             'leave': 'future_leave'
         }
     },
+    tech_lab: {
+        text: 'You enter the lab. It\'s clean, sterile, and filled with advanced equipment you don\'t recognize. A large holographic terminal hums in the center of the room, displaying complex temporal equations.',
+        options: {
+            'use terminal': 'use_terminal',
+            'craft stabilizer': 'craft_stabilizer',
+            'leave': 'future_intro'
+        }
+    },
+    use_terminal: {
+        text: 'You place the ancient CPU on the terminal. It whirs to life, scanning the object. A holographic blueprint materializes, showing a "Temporal Stabilizer." The blueprint indicates two missing components: a "Pulsating Crystal" of immense energy and a "Stabilizing Agent." It seems you can synthesize the agent with the right materials, but the crystal will be harder to find. The terminal flashes a warning: "Temporal anomaly detected. High energy signature located in prehistoric era, near a large body of water."',
+        options: {
+            'leave': 'future_intro'
+        }
+    },
     cyber_market: {
-        text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a rare earth metal. You also see a data broker offering information about the future.',
+        text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a strange, ancient CPU. You also see a data broker offering information about the future.',
         options: {
             'buy crystal': 'buy_crystal',
             'talk to data broker': 'data_broker',
@@ -341,6 +385,12 @@ const gameData = {
             'play again': 'start'
         }
     },
+    master_of_time_ending: {
+        text: 'You insert the key into the pedestal. The Temporal Stabilizer in your inventory activates, humming with a powerful energy. The Chronos Sphere resonates with the device, and the room dissolves into a breathtaking vista of the entire timeline. You see the past, present, and future laid out before you, not as a chaotic mess, but as a beautiful, intricate tapestry. You have not only escaped, but you have become a master of time, a guardian of the timeline. You are free to go anywhere, anywhen.',
+        options: {
+            'play again': 'start'
+        }
+    },
     true_ending: {
         text: 'You insert the key into the pedestal. The Temporal Stabilizer components in your inventory resonate with the Sphere, stabilizing the temporal energies. The room dissolves, not into a chaotic vortex, but into a serene landscape of swirling nebulae. You have escaped and mastered the currents of time. You are free to choose your own destiny.',
         options: {
@@ -382,18 +432,18 @@ function updateParadoxScore() {
 }
 
 const commands = {
-    'buy metal': () => {
+    'buy cpu': () => {
         if (gameState === 'blacksmith_metal') {
-            inventory.push('rare earth metal');
+            inventory.push('ancient cpu');
             paradoxScore += 20;
-            gameData.cyber_market.text = 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." You have a rare earth metal to trade.';
+            gameData.cyber_market.text = 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." You have a strange, ancient CPU to trade.';
             gameState = 'past_intro';
         }
     },
     'buy crystal': () => {
-        if (gameState === 'cyber_market' && inventory.includes('rare earth metal')) {
+        if (gameState === 'cyber_market' && inventory.includes('ancient cpu')) {
             inventory.push('data crystal');
-            inventory = inventory.filter(item => item !== 'rare earth metal');
+            inventory = inventory.filter(item => item !== 'ancient cpu');
             paradoxScore += 20;
             gameData.alchemist_shop.text = 'You enter the alchemist\'s shop. Strange potions and herbs line the shelves. The alchemist, a wizened old man, greets you. You have a data crystal to trade.';
             gameState = 'future_leave';
@@ -404,7 +454,11 @@ const commands = {
             inventory.push('temporal key');
             inventory = inventory.filter(item => item !== 'data crystal');
             paradoxScore += 20;
-            gameData.start.text = 'You are back in the sterile, white room. You now have a strange, ornate key. The Chronos Sphere pulses before you. A keyhole has appeared on the pedestal.';
+            if (inventory.includes('temporal stabilizer')) {
+                gameData.start.text = 'You are back in the sterile, white room. You now have a strange, ornate key and the Temporal Stabilizer. The Chronos Sphere pulses before you. A keyhole has appeared on the pedestal. The Stabilizer hums, as if waiting to be used.';
+            } else {
+                gameData.start.text = 'You are back in the sterile, white room. You now have a strange, ornate key. The Chronos Sphere pulses before you. A keyhole has appeared on the pedestal.';
+            }
             gameState = 'start';
         }
     },
@@ -426,6 +480,34 @@ const commands = {
             gameState = 'ai_spike_success';
         }
     },
+    'synthesize agent': () => {
+        if (gameState === 'alchemist_synthesis' && inventory.includes('pulsating crystal') && inventory.includes('temporal dust')) {
+            inventory = inventory.filter(item => item !== 'pulsating crystal');
+            inventory = inventory.filter(item => item !== 'temporal dust');
+            inventory.push('stabilizing agent');
+            gameData.alchemist_synthesis.text = 'You give the alchemist the Pulsating Crystal and the Temporal Dust. He combines them in a flash of light, creating a swirling, iridescent liquid. "Here you are," he says, handing you the Stabilizing Agent. "Use it wisely."';
+            gameData.alchemist_shop.text = 'You enter the alchemist\'s shop. Strange potions and herbs line the shelves. The alchemist nods at you, busy with his work.';
+        } else if (gameState === 'alchemist_synthesis') {
+            gameData.alchemist_synthesis.text = 'You don\'t have the necessary components. The alchemist requires a powerful energy source and a catalyst.';
+        }
+    },
+    'craft stabilizer': () => {
+        if (gameState === 'tech_lab' && inventory.includes('ancient cpu') && inventory.includes('stabilizing agent')) {
+            inventory = inventory.filter(item => item !== 'ancient cpu');
+            inventory = inventory.filter(item => item !== 'stabilizing agent');
+            inventory.push('temporal stabilizer');
+            gameData.tech_lab.text = 'You use the terminal to fabricate the Temporal Stabilizer. The machine hums to life, and in a flash of light, the device is created. It feels cool to the touch and emanates a sense of calm and order.';
+        } else if (gameState === 'tech_lab') {
+            gameData.tech_lab.text = 'You don\'t have the necessary components to craft the Temporal Stabilizer.';
+        }
+    },
+    'use terminal': () => {
+        if (gameState === 'tech_lab' && inventory.includes('ancient cpu')) {
+            gameState = 'use_terminal';
+        } else if (gameState === 'tech_lab') {
+            gameData.tech_lab.text = 'You approach the terminal, but it requires an object for analysis. It seems to be waiting for a specific component.';
+        }
+    },
     'access core': () => {
         if (gameState === 'ai_spike_success') {
             inventory.push('temporal key');
@@ -445,15 +527,20 @@ const commands = {
             inventory = inventory.filter(item => item !== 'temporal dust');
         }
     },
+    'use stabilizer': () => {
+        if (inventory.includes('temporal stabilizer')) {
+            paradoxScore = 0;
+            inventory = inventory.filter(item => item !== 'temporal stabilizer');
+            inventory.push('stabilizer used');
+        }
+    },
     'use key': () => {
         if ((gameState === 'start' || gameState === 'future_leave' || gameState === 'sphere') && inventory.includes('temporal key')) {
-            const hasAllStabilizerParts = inventory.includes('Ancient CPU') && inventory.includes('Pulsating Crystal') && inventory.includes('Stabilizing Agent');
-            if (hasAllStabilizerParts) {
-                if (paradoxScore <= 20) {
-                    gameState = 'master_of_time_ending';
-                } else {
-                    gameState = 'true_ending';
-                }
+
+            if (inventory.includes('stabilizer used')) {
+                gameState = 'master_of_time_ending';
+            } else if (inventory.includes('temporal dust') && paradoxScore <= 50) {
+                gameState = 'true_ending';
             } else {
                 gameState = 'end';
             }
@@ -463,6 +550,12 @@ const commands = {
         if (gameState === 'dino_puzzle_raptor') {
             inventory.push('dino-lure');
             gameState = 'dino_puzzle_success';
+        }
+    },
+    'take crystal': () => {
+        if (gameState === 'swing_to_skeleton') {
+            inventory.push('pulsating crystal');
+            gameState = 'crystal_acquired';
         }
     },
     'use dino-lure': () => {
