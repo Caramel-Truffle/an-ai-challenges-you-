@@ -36,6 +36,12 @@ body {
     color: #ff4d4d;
 }
 
+#memory {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: #ffff00;
+}
+
 #input-container {
     display: flex;
     justify-content: center;
