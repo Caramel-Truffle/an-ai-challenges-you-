@@ -8,6 +8,7 @@ let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
 let memory = [];
+let currentDialogue = null;
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -81,6 +82,11 @@ function handleOption(input) {
     const currentState = getCurrentState();
     if (!currentState) return false;
 
+    if (currentState.dialogue) {
+        currentDialogue = currentState.dialogue.start;
+        return true;
+    }
+
     const options = currentState.options;
     if (options && options[input]) {
         if (options[input] === 'start' || options[input] === 'core.start') {
@@ -101,6 +107,32 @@ function handleOption(input) {
     return false;
 }
 
+function handleDialoguePuzzle(input) {
+    if (!currentDialogue) return false;
+
+    const dialogueNode = currentDialogue;
+    if (dialogueNode.options && dialogueNode.options[input]) {
+        const nextNodeKey = dialogueNode.options[input];
+        const nextDialogueNode = getCurrentState().dialogue[nextNodeKey];
+
+        if (nextDialogueNode) {
+            currentDialogue = nextDialogueNode;
+            if (nextDialogueNode.onEnter) {
+                nextDialogueNode.onEnter();
+            }
+            if (nextDialogueNode.nextState) {
+                gameState = nextDialogueNode.nextState;
+                currentDialogue = null;
+            }
+        } else {
+            currentDialogue = null;
+        }
+    } else {
+        currentDialogue = null;
+    }
+    return true;
+}
+
 function handleInvalidInput() {
     const p = document.createElement('p');
     p.className = 'error-message';
@@ -116,7 +148,9 @@ function processInput() {
         existingError.remove();
     }
 
-    if (!handleCommand(input) && !handleOption(input)) {
+    if (currentDialogue) {
+        handleDialoguePuzzle(input);
+    } else if (!handleCommand(input) && !handleOption(input)) {
         handleInvalidInput();
     }
 
@@ -131,12 +165,21 @@ function updateStory() {
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
-        p.textContent = currentState.text;
+        let options;
+
+        if (currentDialogue) {
+            p.textContent = currentDialogue.text;
+            options = currentDialogue.options;
+        } else {
+            p.textContent = currentState.text;
+            options = currentState.options;
+        }
+
         story.appendChild(p);
 
-        if (currentState.options) {
+        if (options) {
             const optionsList = document.createElement('ul');
-            for (const option in currentState.options) {
+            for (const option in options) {
                 const listItem = document.createElement('li');
                 const link = document.createElement('a');
                 link.href = '#';
