@@ -8,7 +8,7 @@ let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
 let memory = [];
-let currentDialogue = null;
+let lastResponse = null;
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -108,30 +108,27 @@ function handleOption(input) {
 }
 
 function handleDialoguePuzzle(input) {
-    if (!currentDialogue) return false;
-
-    const dialogueNode = currentDialogue;
-    if (dialogueNode.options && dialogueNode.options[input]) {
-        const nextNodeKey = dialogueNode.options[input];
-        const nextDialogueNode = getCurrentState().dialogue[nextNodeKey];
-
-        if (nextDialogueNode) {
-            currentDialogue = nextDialogueNode;
-            if (nextDialogueNode.onEnter) {
-                nextDialogueNode.onEnter();
+    const currentState = getCurrentState();
+    if (currentState && currentState.dialogue) {
+        const choice = currentState.dialogue[input];
+        if (choice) {
+            lastResponse = choice.response;
+            if (choice.onChoose) {
+                choice.onChoose();
             }
-            if (nextDialogueNode.nextState) {
-                gameState = nextDialogueNode.nextState;
-                currentDialogue = null;
+            if (choice.nextState) {
+                gameState = choice.nextState;
+                const newCurrentState = getCurrentState();
+                if (newCurrentState && newCurrentState.onEnter) {
+                    newCurrentState.onEnter();
+                }
             }
-        } else {
-            currentDialogue = null;
+            return true;
         }
-    } else {
-        currentDialogue = null;
     }
-    return true;
+    return false;
 }
+
 
 function handleInvalidInput() {
     const p = document.createElement('p');
@@ -148,9 +145,7 @@ function processInput() {
         existingError.remove();
     }
 
-    if (currentDialogue) {
-        handleDialoguePuzzle(input);
-    } else if (!handleCommand(input) && !handleOption(input)) {
+    if (!handleCommand(input) && !handleDialoguePuzzle(input) && !handleOption(input)) {
         handleInvalidInput();
     }
 
@@ -162,6 +157,15 @@ function processInput() {
 
 function updateStory() {
     story.innerHTML = '';
+
+    if (lastResponse) {
+        const p = document.createElement('p');
+        p.classList.add('dialogue-response');
+        p.textContent = lastResponse;
+        story.appendChild(p);
+        lastResponse = null;
+    }
+
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
@@ -177,9 +181,10 @@ function updateStory() {
 
         story.appendChild(p);
 
-        if (options) {
+        const optionsSource = currentState.options || currentState.dialogue;
+        if (optionsSource) {
             const optionsList = document.createElement('ul');
-            for (const option in options) {
+            for (const option in optionsSource) {
                 const listItem = document.createElement('li');
                 const link = document.createElement('a');
                 link.href = '#';

@@ -46,7 +46,7 @@ const gameData = {
             }
         },
         antagonist_wins_ending: {
-            text: 'The hooded figure smiles, a chilling, triumphant sound. "You are too late," it says. "The future is mine to reshape." The world around you dissolves into a vortex of distorted colors and sounds. You have failed. The antagonist has won.',
+            text: 'You are trapped in a timeless void, a prison of the antagonist\'s making. You have failed. The antagonist has won. Their plan to reshape the past is now unopposed. You can only watch as the timeline is rewritten, your own existence fading into nothingness.',
             options: {
                 'start over': 'core.start'
             }
@@ -66,10 +66,10 @@ const gameData = {
             }
         },
         strange_clearing: {
-            text: 'You find a strange clearing in the jungle. In the center of the clearing, a strange symbol is carved into the ground. It seems to be a star map, but the constellations are all wrong. You also see a strange, hooded figure watching you from the edge of the clearing. The figure disappears into the jungle before you can get a closer look.',
+            text: 'You find a strange clearing in the jungle. In the center of the clearing, a strange symbol is carved into the ground. It seems to be a star map, but the constellations are all wrong. You also see a strange, hooded figure watching you from the edge of the clearing.',
             options: {
                 'remember symbol': 'dino.remember_symbol',
-                'follow figure': 'dino.antagonist_encounter',
+                'talk to hooded figure': 'dino.antagonist_encounter',
                 'leave': 'dino.intro'
             }
         },
@@ -85,9 +85,12 @@ const gameData = {
             }
         },
         antagonist_encounter: {
-            text: 'As you are about to leave the clearing, the hooded figure reappears. "You are not supposed to be here," it says, its voice a distorted whisper. "I will not let you interfere with my plans." The figure raises a hand, and you feel a sharp pain in your head. The world around you begins to fade. You have been sent back to the sphere.',
+            text: 'As you are about to leave the clearing, the hooded figure reappears. "You are not supposed to be here," it says, its voice a distorted whisper. "Every time you jump, you weaken the fabric of reality. I am trying to prevent a catastrophe, and you are making it worse. I will not let you interfere." The figure raises a hand, and you feel a sharp pain in your head. The world around you begins to fade. You have been sent back to the sphere.',
             options: {
                 'return to sphere': 'core.sphere'
+            },
+            onEnter: () => {
+                paradoxScore += 10;
             }
         },
         crashed_ship: {
@@ -386,12 +389,13 @@ const gameData = {
             }
         },
         tavern: {
-            text: 'You enter the tavern. It is a noisy, crowded place. A woman with a lute is singing a sad song about a lost love. A group of knights is gambling at a corner table. The innkeeper, a large, jolly man, is cleaning a mug behind the bar. You also see a strange, hooded figure sitting in a dark corner.',
+            text: 'You enter the tavern. It is a noisy, crowded place. A woman with a lute is singing a sad song about a lost love. A group of knights is gambling at a corner table. The innkeeper, a large, jolly man, is cleaning a mug behind the bar. You also see a strange, hooded figure sitting in a dark corner, and a mysterious stranger sipping ale by the fire.',
             options: {
                 'talk to singer': 'past.singer_dialogue',
                 'talk to knights': 'past.knights_dialogue',
                 'talk to innkeeper': 'past.innkeeper_dialogue',
                 'talk to hooded figure': 'past.antagonist_encounter',
+                'talk to mysterious stranger': 'past.stranger_dialogue_start',
                 'leave': 'past.intro'
             }
         },
@@ -511,6 +515,51 @@ const gameData = {
                     inventory.push('Ancient CPU');
                 }
             }
+        },
+        stranger_dialogue_start: {
+            text: 'You approach the mysterious stranger. They look up from their drink, their eyes sharp and intelligent. "You\'re not from around here, are you?" they ask, their voice a low murmur. "I can see the threads of time clinging to you like a shroud. What do you seek in this... forgotten age?"',
+            dialogue: {
+                'who are you?': {
+                    response: '"Who I am is not important. What matters is what you are doing here. You are meddling with forces you do not understand."',
+                    nextState: 'past.stranger_dialogue_start'
+                },
+                'i\'m just a traveler.': {
+                    response: '"A traveler who leaves ripples in the timestream? I think not. I know what you are, and I know what you seek. But the question is, why do you seek it?"',
+                    nextState: 'past.stranger_dialogue_start'
+                },
+                'i seek the chronos sphere.': {
+                    response: '"The Chronos Sphere... a dangerous toy in the hands of a child. But you are not a child, are you? There is a purpose to your journey, a desperation. Tell me, what do you hope to achieve?"',
+                    nextState: 'past.stranger_dialogue_reveal_motive'
+                }
+            }
+        },
+        stranger_dialogue_reveal_motive: {
+            text: 'The stranger leans in closer, their voice barely a whisper. "So, you seek to control the Sphere. But to what end? To save the world? To change your own past? Or perhaps... to save someone you love?"',
+            dialogue: {
+                'i want to save the world.': {
+                    response: '"A noble goal, but naive. The world does not need saving. It needs to be left alone. Your interference will only make things worse."',
+                    nextState: 'past.stranger_dialogue_end'
+                },
+                'i want to change my past.': {
+                    response: '"And what of the consequences? The paradoxes you would create? You would unravel the very fabric of reality for your own selfish desires."',
+                    nextState: 'past.stranger_dialogue_end'
+                },
+                'i want to save someone i love.': {
+                    response: '"Then we are not so different, you and I. I, too, am trying to save someone I love. But our methods... they are not the same. I will not let you stand in my way." The stranger stands up, their eyes glowing with a faint, blue light. "We will meet again, traveler. And then, we will see whose will is stronger." The stranger disappears in a flash of light, leaving you alone in the tavern.',
+                    onChoose: () => {
+                        if (!memory.includes('stranger motive')) {
+                            memory.push('stranger motive');
+                        }
+                    },
+                    nextState: 'past.tavern'
+                }
+            }
+        },
+        stranger_dialogue_end: {
+            text: 'The stranger sighs, a look of disappointment in their eyes. "You do not understand. You are a danger to yourself and to everyone around you. I will not help you." The stranger stands up and walks away, disappearing into the crowd.',
+            options: {
+                'leave': 'past.tavern'
+            }
         }
     },
     future: {
@@ -569,7 +618,7 @@ const gameData = {
         craft_stabilizer_fail: {
             text: 'You don\'t have the necessary components to craft the Temporal Stabilizer.',
             options: {
-                'leave': 'future.tech_lab'
+                'leave': 'future.antagonist_encounter'
             }
         },
         cyber_market: {
@@ -578,6 +627,7 @@ const gameData = {
                 'buy crystal': 'future.buy_crystal',
                 'talk to data broker': 'future.data_broker',
                 'visit clinic': 'future.black_market_clinic',
+                'visit data archives': 'future.data_archives',
                 'leave': 'future.leave'
             }
         },
@@ -751,10 +801,44 @@ const gameData = {
             }
         },
         antagonist_encounter: {
-            text: 'The hooded figure is waiting for you in the lab. "I knew you would come here," it says. "I have already taken what I need. The Stabilizer is mine." The figure holds up a device that looks remarkably similar to the one you were trying to create. "I will not let you interfere with my plans. I will create a new future, a better future." The figure disappears in a flash of light, leaving you alone in the lab.',
+            text: 'The hooded figure is waiting for you in the lab. "I knew you would come here," it says. "But you are too late. I have what I need to save her." The figure holds up a device that looks remarkably similar to the one you were trying to create. "You think you are saving the world, but you are only ensuring its destruction. I will not let you interfere." The figure activates a device on their wrist, and the lab begins to shake. "I am sending you to a little... pocket dimension. A place where you can\'t cause any more harm." The world around you dissolves into a chaotic vortex of light and color. You are trapped in a timeless void.',
             options: {
-                'leave': 'future.intro',
-                'surrender': 'core.antagonist_wins_ending'
+                'try to escape': 'core.antagonist_wins_ending'
+            },
+            onEnter: () => {
+                paradoxScore += 20;
+            }
+        },
+        data_archives: {
+            text: 'You enter a vast, silent data archive. Rows upon rows of servers hum with a low, constant energy. A terminal in the center of the room is active. You can search the archives for information.',
+            options: {
+                'search for "Chronos Sphere"': 'future.archive_search_sphere',
+                'search for "The Antagonist"': 'future.archive_search_antagonist',
+                'search for your own name': 'future.archive_search_self',
+                'leave': 'future.cyber_market'
+            }
+        },
+        archive_search_sphere: {
+            text: 'You search for "Chronos Sphere". The terminal returns a single, heavily encrypted file. You are unable to open it.',
+            options: {
+                'leave': 'future.data_archives'
+            }
+        },
+        archive_search_antagonist: {
+            text: 'You search for "The Antagonist". The terminal returns a corrupted file. You can only make out a few words: "...a brilliant scientist... a terrible accident... a loved one lost to time... a desperate attempt to change the past..."',
+            options: {
+                'leave': 'future.data_archives'
+            }
+        },
+        archive_search_self: {
+            text: 'You search for your own name. The terminal returns a log file. It seems to be a record of your own journey through time, but it also contains a personal log from the antagonist. It reads: "I saw them again today. They are so close to the truth. But they don\'t understand. I\'m not trying to destroy the timeline. I\'m trying to save it. I\'m trying to save her. I have to stop them. For her." The log is dated three days from now. You have gained a crucial insight into the antagonist\'s motives.',
+            options: {
+                'leave': 'future.data_archives'
+            },
+            onEnter: () => {
+                if (!memory.includes('antagonist motive')) {
+                    memory.push('antagonist motive');
+                }
             }
         }
     }
