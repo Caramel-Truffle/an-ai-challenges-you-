@@ -82,6 +82,11 @@ function handleOption(input) {
     const currentState = getCurrentState();
     if (!currentState) return false;
 
+    if (currentState.dialogue) {
+        currentDialogue = currentState.dialogue.start;
+        return true;
+    }
+
     const options = currentState.options;
     if (options && options[input]) {
         if (options[input] === 'start' || options[input] === 'core.start') {
@@ -164,7 +169,16 @@ function updateStory() {
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
-        p.textContent = currentState.text;
+        let options;
+
+        if (currentDialogue) {
+            p.textContent = currentDialogue.text;
+            options = currentDialogue.options;
+        } else {
+            p.textContent = currentState.text;
+            options = currentState.options;
+        }
+
         story.appendChild(p);
 
         const optionsSource = currentState.options || currentState.dialogue;

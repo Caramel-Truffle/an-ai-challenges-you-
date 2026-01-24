@@ -426,16 +426,64 @@ const gameData = {
             }
         },
         innkeeper_dialogue: {
-            text: 'You approach the innkeeper. "Welcome, stranger," he says. "What can I get for you?"',
-            options: {
-                'ask about rumors': 'past.innkeeper_rumors',
-                'leave': 'past.tavern'
-            }
-        },
-        innkeeper_rumors: {
-            text: 'The innkeeper tells you that there have been strange sightings in the area lately. People have seen a hooded figure lurking in the shadows, and there are rumors of a strange, metallic object that fell from the sky.',
-            options: {
-                'leave': 'past.tavern'
+            dialogue: {
+                start: {
+                    text: '"Welcome, stranger," the innkeeper says, polishing a mug. "What can I get for you? A drink? Or perhaps you\'re seeking information?"',
+                    options: {
+                        'ask for a drink': 'drink',
+                        'ask about rumors': 'rumors',
+                        'ask about the hooded figure': 'hooded_figure_direct'
+                    }
+                },
+                drink: {
+                    text: '"An ale, then. That\'ll be two coins." He slides a mug across the bar. "Anything else on your mind?"',
+                    options: {
+                        'ask about rumors': 'rumors',
+                        'ask about the hooded figure': 'hooded_figure_direct',
+                        'leave': 'past.tavern'
+                    }
+                },
+                rumors: {
+                    text: '"Rumors, eh? This tavern is full of \'em. But lately... there are whispers of a hooded figure, flitting through the shadows. Some say they\'re a ghost, others a sorcerer."',
+                    options: {
+                        'tell me more': 'hooded_figure_indirect',
+                        'that sounds dangerous': 'hooded_figure_indirect',
+                        'leave': 'past.tavern'
+                    }
+                },
+                hooded_figure_direct: {
+                    text: 'The innkeeper\'s eyes narrow. "You know something about them? Speak plainly, stranger, or find another tavern to drink in."',
+                    options: {
+                        'i\'m trying to stop them': 'convince',
+                        'i\'m just curious': 'fail'
+                    }
+                },
+                hooded_figure_indirect: {
+                    text: '"They were seen near the old blacksmith\'s forge. Seemed mighty interested in a strange piece of metal he found. The smith seemed spooked after they left. That\'s all I know."',
+                    options: {
+                        'thank you': 'success',
+                        'leave': 'past.tavern'
+                    }
+                },
+                convince: {
+                    text: 'He studies your face. "I see... You have an honest face. The figure was seen near the old blacksmith\'s forge. Be careful, traveler."',
+                    options: {
+                        'thank you': 'success'
+                    }
+                },
+                success: {
+                    text: 'You thank the innkeeper for the information. This clue seems important.',
+                    onEnter: () => {
+                        if (!memory.includes('innkeeper_clue')) {
+                            memory.push('innkeeper_clue');
+                        }
+                    },
+                    nextState: 'past.tavern'
+                },
+                fail: {
+                    text: '"Curiosity killed the cat, stranger. Now get out before I call the guards."',
+                    nextState: 'past.intro'
+                }
             }
         },
         lie: {
@@ -529,6 +577,7 @@ const gameData = {
                 'use terminal': 'future.use_terminal',
                 'craft stabilizer': 'future.craft_stabilizer',
                 'get explosive': 'future.get_explosive',
+                'confront antagonist': 'future.antagonist_encounter',
                 'leave': 'future.intro'
             }
         },
@@ -689,24 +738,54 @@ const gameData = {
             text: 'You approach the AI tower. A holographic interface appears before you. "State your purpose," it says, its voice a pleasant, androgynous monotone.',
             options: {
                 'ask about sphere': 'future.ai_sphere',
-                'use data spike': 'future.ai_spike_success',
+                'use data spike': () => {
+                    if (inventory.includes('data spike')) {
+                        return 'future.hacking_puzzle';
+                    }
+                    return 'future.ai_tower_no_spike';
+                },
                 'leave': 'future.leave'
             }
         },
-        ai_sphere: {
-            text: 'The AI considers your question. "The Chronos Sphere is a theoretical construct. Its existence would violate several laws of physics. Therefore, you cannot be here." The interface vanishes, and you are barred from the tower.',
+        ai_tower_no_spike: {
+            text: "You don't have a data spike to use.",
             options: {
-                'leave': 'future.leave'
+                'back': 'future.ai_tower'
             }
         },
-        ai_spike_success: {
-            text: 'The AI\'s voice becomes distorted and erratic. "My... my systems... what have you done?" it shrieks. The tower\'s defenses are down. You have a chance to access its core.',
+        hacking_puzzle: {
+            text: 'You initiate the hack. The AI\'s firewall appears as a series of logic gates. To bypass it, you must enter the correct three-symbol sequence. The terminal provides a clue: "The first is the largest prime under 10, the second is the square of the first prime, and the third is a triangle number whose digits sum to 3." A keypad shows symbols for numbers 1 through 9.',
+            options: {
+                '345': 'future.hacking_failure',
+                '246': 'future.hacking_failure',
+                '793': 'future.hacking_success',
+                '541': 'future.hacking_failure'
+            }
+        },
+        hacking_success: {
+            text: 'The sequence is correct. The firewall collapses, and you gain access to the AI\'s core systems. The AI\'s voice becomes distorted and erratic. "My... my systems... what have you done?" it shrieks. The tower\'s defenses are down.',
             options: {
                 'access core': 'future.ai_core',
                 'leave': 'future.leave'
             },
             onEnter: () => {
                 inventory = inventory.filter(item => item !== 'data spike');
+            }
+        },
+        hacking_failure: {
+            text: 'Incorrect sequence. The AI detects the intrusion and initiates countermeasures. A surge of electricity courses through the terminal, shocking you. You retreat from the tower, your data spike destroyed.',
+            options: {
+                'leave': 'future.leave'
+            },
+            onEnter: () => {
+                inventory = inventory.filter(item => item !== 'data spike');
+                paradoxScore += 10;
+            }
+        },
+        ai_sphere: {
+            text: 'The AI considers your question. "The Chronos Sphere is a theoretical construct. Its existence would violate several laws of physics. Therefore, you cannot be here." The interface vanishes, and you are barred from the tower.',
+            options: {
+                'leave': 'future.leave'
             }
         },
         ai_core: {
