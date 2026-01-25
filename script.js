@@ -8,6 +8,8 @@ let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
 let memory = [];
+let journal = [];
+let temporalAnomalies = {};
 let lastResponse = null;
 
 function getCurrentState() {
@@ -67,6 +69,13 @@ const commands = {
                 gameState = 'core.end';
             }
         }
+    },
+    'read journal': () => {
+        if (journal.length === 0) {
+            lastResponse = 'You have not found any journal fragments yet.';
+        } else {
+            lastResponse = journal.join('<br><br>');
+        }
     }
 };
 
@@ -87,7 +96,11 @@ function handleOption(input) {
         return true;
     }
 
-    const options = currentState.options;
+    let options = currentState.options;
+    if (typeof options === 'function') {
+        options = options();
+    }
+
     if (options && options[input]) {
         if (options[input] === 'start' || options[input] === 'core.start') {
             resetGame();
@@ -161,7 +174,7 @@ function updateStory() {
     if (lastResponse) {
         const p = document.createElement('p');
         p.classList.add('dialogue-response');
-        p.textContent = lastResponse;
+        p.innerHTML = lastResponse;
         story.appendChild(p);
         lastResponse = null;
     }
@@ -169,19 +182,33 @@ function updateStory() {
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
+        let textContent;
         let options;
 
         if (currentDialogue) {
-            p.textContent = currentDialogue.text;
+            textContent = currentDialogue.text;
             options = currentDialogue.options;
         } else {
-            p.textContent = currentState.text;
+            textContent = currentState.text;
             options = currentState.options;
         }
 
+        if (typeof textContent === 'function') {
+            textContent = textContent();
+        }
+        p.textContent = textContent;
+
         story.appendChild(p);
 
-        const optionsSource = currentState.options || currentState.dialogue;
+        if (typeof options === 'function') {
+            options = options();
+        }
+
+        let optionsSource = options || currentState.dialogue;
+        if (typeof optionsSource === 'function') {
+            optionsSource = optionsSource();
+        }
+
         if (optionsSource) {
             const optionsList = document.createElement('ul');
             for (const option in optionsSource) {

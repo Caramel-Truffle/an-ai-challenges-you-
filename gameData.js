@@ -91,13 +91,37 @@ const gameData = {
             },
             onEnter: () => {
                 paradoxScore += 10;
+                temporalAnomalies.blacksmith_intimidated = true;
             }
         },
         crashed_ship: {
-            text: 'You follow the glint and find a small, heavily damaged alien scout ship half-buried in the mud. The entry hatch is open. Inside, a console is flickering with a faint light.',
+            text: 'You follow the glint and find a small, heavily damaged alien scout ship half-buried in the mud. The entry hatch is open. Inside, a console is flickering with a faint light. Tucked into a crevice is a worn, leather-bound journal.',
+            options: () => {
+                const baseOptions = {
+                    'enter ship': 'dino.ship_console',
+                    'leave': 'dino.intro'
+                };
+                if (!journal.includes('First Journal Fragment: The voice is a warden. The hooded figure is a prisoner.')) {
+                    baseOptions['read journal'] = 'dino.read_journal_1';
+                }
+                return baseOptions;
+            }
+        },
+        read_journal_1: {
+            text: 'You open the journal. The first entry reads: "It lies. The voice is not a guide, but a warden. It wants to keep us here, feeding on our temporal energy. The other one... the hooded figure... they are a prisoner too, not a villain. They are trying to break the cycle, not destroy the timeline. I have to find a way to help them."',
             options: {
-                'enter ship': 'dino.ship_console',
-                'leave': 'dino.intro'
+                'take fragment': 'dino.take_journal_1'
+            }
+        },
+        take_journal_1: {
+            text: 'You carefully tear the page from the journal. You have acquired the First Journal Fragment.',
+            options: {
+                'leave': 'dino.crashed_ship'
+            },
+            onEnter: () => {
+                if (!journal.includes('First Journal Fragment: The voice is a warden. The hooded figure is a prisoner.')) {
+                    journal.push('First Journal Fragment: The voice is a warden. The hooded figure is a prisoner.');
+                }
             }
         },
         ship_console: {
@@ -289,13 +313,36 @@ const gameData = {
             }
         },
         monastery_puzzle_success: {
-            text: 'The monk smiles. "You are wise. The crystal is yours." He hands you the Pulsating Crystal.',
-            options: {
-                'leave': 'past.intro'
+            text: 'The monk smiles. "You are wise. The crystal is yours." He hands you the Pulsating Crystal. "I also have this," he says, handing you a tattered piece of parchment. "It was found with the crystal. It seems to be a journal entry of some kind."',
+            options: () => {
+                const baseOptions = {
+                    'leave': 'past.intro'
+                };
+                if (!journal.includes('Second Journal Fragment: The Sphere is a key. The antagonist wants to change a single moment.')) {
+                    baseOptions['read parchment'] = 'past.read_journal_2';
+                }
+                return baseOptions;
             },
             onEnter: () => {
                 if (!inventory.includes('Pulsating Crystal')) {
                     inventory.push('Pulsating Crystal');
+                }
+            }
+        },
+        read_journal_2: {
+            text: 'The parchment reads: "The Sphere is not a prison, but a key. A key to what, I do not yet know. But I believe it can be used to break free from this temporal loop. The antagonist seems to understand this. They are not trying to destroy the timeline, but to change a single, pivotal moment. I must discover what that moment is."',
+            options: {
+                'take fragment': 'past.take_journal_2'
+            }
+        },
+        take_journal_2: {
+            text: 'You take the parchment. You have acquired the Second Journal Fragment.',
+            options: {
+                'leave': 'past.monastery'
+            },
+            onEnter: () => {
+                if (!journal.includes('Second Journal Fragment: The Sphere is a key. The antagonist wants to change a single moment.')) {
+                    journal.push('Second Journal Fragment: The Sphere is a key. The antagonist wants to change a single moment.');
                 }
             }
         },
@@ -370,10 +417,22 @@ const gameData = {
             }
         },
         blacksmith_metal: {
-            text: 'You ask the blacksmith about rare metals. He shows you a strange, intricate metal object with geometric patterns etched into its surface. "Found this in a crater," he says. "It\'s harder than any steel I\'ve ever seen, and it hums with a faint warmth. You can have it for a price."',
-            options: {
-                'buy cpu': 'past.buy_cpu',
-                'leave': 'past.intro'
+            text: () => {
+                if (temporalAnomalies.blacksmith_intimidated) {
+                    return 'You ask the blacksmith about rare metals. He looks at you nervously. "I... I can\'t sell you anything," he stammers. "A hooded figure came by and warned me not to. Said it would cause a disaster. I\'m sorry, but I can\'t help you."';
+                }
+                return 'You ask the blacksmith about rare metals. He shows you a strange, intricate metal object with geometric patterns etched into its surface. "Found this in a crater," he says. "It\'s harder than any steel I\'ve ever seen, and it hums with a faint warmth. You can have it for a price."';
+            },
+            options: () => {
+                if (temporalAnomalies.blacksmith_intimidated) {
+                    return {
+                        'leave': 'past.intro'
+                    };
+                }
+                return {
+                    'buy cpu': 'past.buy_cpu',
+                    'leave': 'past.intro'
+                };
             }
         },
         buy_cpu: {
@@ -386,6 +445,13 @@ const gameData = {
                     inventory.push('ancient cpu');
                 }
                 paradoxScore += 20;
+            }
+        },
+        persuade_blacksmith: {
+            text: 'You return to the blacksmith and tell him the innkeeper\'s story. The blacksmith\'s eyes widen. "The innkeeper remembers that old story? Well, I\'ll be. Alright, you seem trustworthy. I\'ll sell you the metal, but you must promise to use it for good."',
+            options: {
+                'buy cpu': 'past.buy_cpu',
+                'leave': 'past.intro'
             }
         },
         tavern: {
@@ -429,10 +495,22 @@ const gameData = {
             dialogue: {
                 start: {
                     text: '"Welcome, stranger," the innkeeper says, polishing a mug. "What can I get for you? A drink? Or perhaps you\'re seeking information?"',
+                    options: () => {
+                        const baseOptions = {
+                            'ask for a drink': 'drink',
+                            'ask about rumors': 'rumors',
+                            'ask about the hooded figure': 'hooded_figure_direct'
+                        };
+                        if (temporalAnomalies.blacksmith_intimidated) {
+                            baseOptions['ask about the blacksmith'] = 'blacksmith_anomaly';
+                        }
+                        return baseOptions;
+                    }
+                },
+                blacksmith_anomaly: {
+                    text: '"The blacksmith? He\'s been spooked lately. A hooded figure threatened him, and now he\'s refusing to sell a strange piece of metal he found. If you want to earn his trust, remind him of the time I vouched for him when he was accused of selling shoddy goods. He\'ll know you\'re a friend of mine."',
                     options: {
-                        'ask for a drink': 'drink',
-                        'ask about rumors': 'rumors',
-                        'ask about the hooded figure': 'hooded_figure_direct'
+                        'leave': 'past.persuade_blacksmith'
                     }
                 },
                 drink: {
@@ -825,9 +903,26 @@ const gameData = {
             }
         },
         archive_search_antagonist: {
-            text: 'You search for "The Antagonist". The terminal returns a corrupted file. You can only make out a few words: "...a brilliant scientist... a terrible accident... a loved one lost to time... a desperate attempt to change the past..."',
+            text: 'You search for "The Antagonist". The terminal returns a single, unencrypted file. It appears to be a journal entry. It reads: "I finally understand. The antagonist is not trying to save someone they lost in an accident. They are trying to save themselves. They are a future version of me, trapped in a paradox of their own making. They believe that by changing the past, they can prevent themselves from ever becoming the antagonist. But they are wrong. It will only create a new, more terrible paradox. I must stop them, not by fighting them, but by helping them find another way."',
+            options: () => {
+                const baseOptions = {
+                    'leave': 'future.data_archives'
+                };
+                if (!journal.includes('Third Journal Fragment: The antagonist is a future version of myself, trapped in a paradox. I must help them find another way.')) {
+                    baseOptions['take fragment'] = 'future.take_journal_3';
+                }
+                return baseOptions;
+            }
+        },
+        take_journal_3: {
+            text: 'You download the journal entry. You have acquired the Third Journal Fragment.',
             options: {
                 'leave': 'future.data_archives'
+            },
+            onEnter: () => {
+                if (!journal.includes('Third Journal Fragment: The antagonist is a future version of myself, trapped in a paradox. I must help them find another way.')) {
+                    journal.push('Third Journal Fragment: The antagonist is a future version of myself, trapped in a paradox. I must help them find another way.');
+                }
             }
         },
         archive_search_self: {
