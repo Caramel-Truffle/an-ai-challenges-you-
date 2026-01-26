@@ -3,12 +3,15 @@ const userInput = document.getElementById('user-input');
 const submitButton = document.getElementById('submit-button');
 const paradoxScoreDisplay = document.getElementById('paradox-score');
 const memoryDisplay = document.getElementById('memory');
+const journalDisplay = document.getElementById('journal-display');
 
 let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
 let memory = [];
+let journal = [];
 let lastResponse = null;
+let pastBlacksmithAltered = false;
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -39,6 +42,19 @@ function updateMemory() {
             memoryList.appendChild(memoryItem);
         });
         memoryDisplay.appendChild(memoryList);
+    }
+}
+
+function updateJournal() {
+    journalDisplay.innerHTML = '';
+    if (journal.length > 0) {
+        const journalList = document.createElement('ul');
+        journal.forEach(entry => {
+            const journalItem = document.createElement('li');
+            journalItem.textContent = entry;
+            journalList.appendChild(journalItem);
+        });
+        journalDisplay.appendChild(journalList);
     }
 }
 
@@ -83,7 +99,7 @@ function handleOption(input) {
     if (!currentState) return false;
 
     if (currentState.dialogue) {
-        currentDialogue = currentState.dialogue.start;
+        // This is handled by handleDialoguePuzzle
         return true;
     }
 
@@ -152,6 +168,7 @@ function processInput() {
     userInput.value = '';
     updateParadoxScore();
     updateMemory();
+    updateJournal();
     updateStory();
 }
 
@@ -169,17 +186,10 @@ function updateStory() {
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
-        let options;
-
-        if (currentDialogue) {
-            p.textContent = currentDialogue.text;
-            options = currentDialogue.options;
-        } else {
-            p.textContent = currentState.text;
-            options = currentState.options;
-        }
-
+        p.textContent = typeof currentState.text === 'function' ? currentState.text() : currentState.text;
         story.appendChild(p);
+
+        const options = currentState.options;
 
         const optionsSource = currentState.options || currentState.dialogue;
         if (optionsSource) {

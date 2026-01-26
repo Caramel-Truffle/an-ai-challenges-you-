@@ -82,6 +82,9 @@ const gameData = {
                 if (!memory.includes('symbol')) {
                     memory.push('symbol');
                 }
+                if (!journal.includes('Journal Entry 1: The Hooded Figure')) {
+                    journal.push('Journal Entry 1: The Hooded Figure - I saw them again today. The traveler. They are meddling with things they do not understand. I must stop them, but how?');
+                }
             }
         },
         antagonist_encounter: {
@@ -105,6 +108,11 @@ const gameData = {
             options: {
                 'press zorp gleep floop': 'dino.ship_puzzle_with_memory',
                 'leave': 'dino.intro'
+            },
+            onEnter: () => {
+                if (!journal.includes('Journal Entry 2: The Hacking Code')) {
+                    journal.push('Journal Entry 2: The Hacking Code - I found this strange alien console. It seems to be a key to the future. The sequence is 793. I must remember this.');
+                }
             }
         },
         ship_puzzle_with_memory: {
@@ -363,7 +371,12 @@ const gameData = {
             }
         },
         blacksmith: {
-            text: 'You enter the blacksmith\'s forge. The air is hot and filled with the sound of hammering. The blacksmith is a large, muscular man. "What do you want?" he grunts.',
+            text: () => {
+                if (pastBlacksmithAltered) {
+                    return 'You enter the blacksmith\'s forge. The air is cold and silent. The forge is dark and the blacksmith is nowhere to be seen. It seems he has abandoned his shop.';
+                }
+                return 'You enter the blacksmith\'s forge. The air is hot and filled with the sound of hammering. The blacksmith is a large, muscular man. "What do you want?" he grunts.';
+            },
             options: {
                 'ask about metal': 'past.blacksmith_metal',
                 'leave': 'past.intro'
@@ -552,6 +565,15 @@ const gameData = {
                         }
                     },
                     nextState: 'past.tavern'
+                },
+                'tell me more about the hooded figure.': {
+                    response: '"The hooded figure... a tragic figure, really. They are not what they seem. They are trying to fix a terrible mistake, but their methods are... extreme. Be careful, traveler. Their path is paved with good intentions, but it may lead to ruin." The stranger looks at you with a sad, knowing gaze.',
+                    onChoose: () => {
+                        if (!journal.includes('Journal Entry 3: The Antagonist\'s Motive')) {
+                            journal.push('Journal Entry 3: The Antagonist\'s Motive - The stranger told me more about the hooded figure. They are not evil, but they are dangerous. They are trying to save someone they love, but they are willing to sacrifice anything, and anyone, to do it.');
+                        }
+                    },
+                    nextState: 'past.tavern'
                 }
             }
         },
@@ -578,6 +600,10 @@ const gameData = {
                 'craft stabilizer': 'future.craft_stabilizer',
                 'get explosive': 'future.get_explosive',
                 'confront antagonist': 'future.antagonist_encounter',
+                'alter blacksmith\'s past': () => {
+                    pastBlacksmithAltered = true;
+                    return 'future.tech_lab';
+                },
                 'leave': 'future.intro'
             }
         },
@@ -754,7 +780,7 @@ const gameData = {
             }
         },
         hacking_puzzle: {
-            text: 'You initiate the hack. The AI\'s firewall appears as a series of logic gates. To bypass it, you must enter the correct three-symbol sequence. The terminal provides a clue: "The first is the largest prime under 10, the second is the square of the first prime, and the third is a triangle number whose digits sum to 3." A keypad shows symbols for numbers 1 through 9.',
+            text: 'You initiate the hack. The AI\'s firewall appears as a series of logic gates. To bypass it, you must enter the correct three-symbol sequence. The terminal provides a clue: "The first is the largest prime under 10, the second is the square of the first prime, and the third is a triangle number whose digits sum to 3." A keypad shows symbols for numbers 1 through 9. You remember a journal entry you found in the past.',
             options: {
                 '345': 'future.hacking_failure',
                 '246': 'future.hacking_failure',
