@@ -3,11 +3,13 @@ const userInput = document.getElementById('user-input');
 const submitButton = document.getElementById('submit-button');
 const paradoxScoreDisplay = document.getElementById('paradox-score');
 const memoryDisplay = document.getElementById('memory');
+const journalDisplay = document.getElementById('journal-display');
 
 let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
 let memory = [];
+let journal = [];
 let lastResponse = null;
 
 function getCurrentState() {
@@ -26,6 +28,19 @@ function updateParadoxScore() {
     paradoxScoreDisplay.textContent = `Paradox Score: ${paradoxScore}`;
     if (paradoxScore >= 100) {
         gameState = 'core.paradox_ending';
+    }
+}
+
+function updateJournal() {
+    journalDisplay.innerHTML = '';
+    if (journal.length > 0) {
+        const journalList = document.createElement('ul');
+        journal.forEach(item => {
+            const journalItem = document.createElement('li');
+            journalItem.textContent = item;
+            journalList.appendChild(journalItem);
+        });
+        journalDisplay.appendChild(journalList);
     }
 }
 
@@ -58,8 +73,12 @@ const commands = {
     },
     'use key': () => {
         if ((gameState === 'core.start' || gameState === 'future.leave' || gameState === 'core.sphere') && inventory.includes('temporal key')) {
+            const hasAllCores = inventory.includes('Temporal Core (Dino)') && inventory.includes('Temporal Core (Past)') && inventory.includes('Temporal Core (Future)');
+            const knowsMotive = journal.includes('The antagonist is the lead scientist. They are trying to save their daughter.');
 
-            if (inventory.includes('stabilizer used')) {
+            if (hasAllCores && knowsMotive) {
+                gameState = 'core.final_choice';
+            } else if (inventory.includes('stabilizer used')) {
                 gameState = 'core.master_of_time_ending';
             } else if (inventory.includes('temporal dust') && paradoxScore <= 50) {
                 gameState = 'core.true_ending';
@@ -152,6 +171,7 @@ function processInput() {
     userInput.value = '';
     updateParadoxScore();
     updateMemory();
+    updateJournal();
     updateStory();
 }
 

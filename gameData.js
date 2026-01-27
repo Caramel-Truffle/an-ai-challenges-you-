@@ -50,11 +50,24 @@ const gameData = {
             options: {
                 'start over': 'core.start'
             }
+        },
+        final_choice: {
+            text: 'You stand before the Chronos Sphere, the three Temporal Cores orbiting around it. You now understand the antagonist\'s motivations. They are not a monster, but a desperate parent trying to save their child. You have a choice: use the cores to stabilize the timeline and escape, or use them to help the antagonist save their daughter, risking a paradox of unknown proportions.',
+            options: {
+                'escape': 'core.true_ending',
+                'help the antagonist': 'core.sacrifice_ending'
+            }
+        },
+        sacrifice_ending: {
+            text: 'You choose to help the antagonist. You pour the energy of the Temporal Cores into the Chronos Sphere, not to escape, but to rewrite the past and save the antagonist\'s daughter. The world dissolves into a brilliant light. You do not know if you have succeeded, or if you have just created a new, even more terrible timeline. But you do know that you have made a choice. You have sacrificed your own escape for the sake of another. You have become a true master of time.',
+            options: {
+                'play again': 'core.start'
+            }
         }
     },
     dino: {
         intro: {
-            text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, a murky swamp, a strange metallic glint in the distance, a strange clearing, and a blocked cave.',
+            text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, a murky swamp, a strange metallic glint in the distance, a strange clearing, a blocked cave, and some ancient ruins.',
             options: {
                 'jungle path': 'dino.jungle_path',
                 'cliff face': 'dino.cliff_face',
@@ -62,7 +75,39 @@ const gameData = {
                 'investigate glint': 'dino.crashed_ship',
                 'strange clearing': 'dino.strange_clearing',
                 'blocked cave': 'dino.blocked_cave',
+                'ancient ruins': 'dino.ancient_ruins',
                 'return to sphere': 'core.sphere'
+            }
+        },
+        ancient_ruins: {
+            text: 'You discover a set of ancient ruins, impossibly old. A stone altar stands in the center, covered in a language you instinctively understand. It reads: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"',
+            options: {
+                'an echo': 'dino.ruins_puzzle_success',
+                'a ghost': 'dino.ruins_puzzle_fail',
+                'music': 'dino.ruins_puzzle_fail',
+                'leave': 'dino.intro'
+            },
+            onEnter: () => {
+                if (!journal.includes('The ruins pose a riddle: "I speak without a mouth and hear without ears..."')) {
+                    journal.push('The ruins pose a riddle: "I speak without a mouth and hear without ears..."');
+                }
+            }
+        },
+        ruins_puzzle_success: {
+            text: 'The altar glows. A hidden compartment opens, revealing a pulsating gem. You have found the Temporal Core (Dino).',
+            options: {
+                'leave': 'dino.intro'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Temporal Core (Dino)')) {
+                    inventory.push('Temporal Core (Dino)');
+                }
+            }
+        },
+        ruins_puzzle_fail: {
+            text: 'The altar remains silent. The answer is incorrect.',
+            options: {
+                'leave': 'dino.intro'
             }
         },
         strange_clearing: {
@@ -81,6 +126,9 @@ const gameData = {
             onEnter: () => {
                 if (!memory.includes('symbol')) {
                     memory.push('symbol');
+                }
+                if (!journal.includes('A strange symbol, a star map with unfamiliar constellations.')) {
+                    journal.push('A strange symbol, a star map with unfamiliar constellations.');
                 }
             }
         },
@@ -278,7 +326,51 @@ const gameData = {
             text: 'You leave the bustling marketplace and follow a winding path up a hill to a secluded monastery. The monks are known for their wisdom and their collection of rare artifacts. An elderly monk greets you at the gate.',
             options: {
                 'ask about artifacts': 'past.monastery_artifacts',
+                'visit library': 'past.library',
                 'leave': 'past.intro'
+            }
+        },
+        library: {
+            text: 'The monk leads you to a vast library, filled with ancient scrolls and leather-bound books. In the center of the room is a locked chest with a riddle inscribed on it: "I have a spine, but no bones. I have pages, but no age. I can be a friend or a foe. What am I?"',
+            options: {
+                'a book': 'past.library_puzzle_success',
+                'a scroll': 'past.library_puzzle_fail',
+                'a map': 'past.library_puzzle_fail',
+                'read antagonist journal': 'past.antagonist_journal_1',
+                'leave': 'past.monastery'
+            },
+            onEnter: () => {
+                if (!journal.includes('The monastery library has a locked chest with a riddle.')) {
+                    journal.push('The monastery library has a locked chest with a riddle.');
+                }
+            }
+        },
+        library_puzzle_success: {
+            text: 'The chest clicks open. Inside, you find another pulsating gem. You have found the Temporal Core (Past).',
+            options: {
+                'leave': 'past.monastery'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Temporal Core (Past)')) {
+                    inventory.push('Temporal Core (Past)');
+                }
+            }
+        },
+        library_puzzle_fail: {
+            text: 'The chest remains locked. The answer is incorrect.',
+            options: {
+                'leave': 'past.monastery'
+            }
+        },
+        antagonist_journal_1: {
+            text: 'You find a loose page from a journal tucked into a book. The handwriting is familiar. It reads: "I finally have the key. The Chronos Sphere is within my grasp. I can finally go back. I can save her. They will try to stop me. They will call me a monster. But they don\'t understand. I\'m not destroying the timeline. I\'m fixing it."',
+            options: {
+                'leave': 'past.library'
+            },
+            onEnter: () => {
+                if (!journal.includes('The antagonist wants to save someone. They believe they are "fixing" the timeline.')) {
+                    journal.push('The antagonist wants to save someone. They believe they are "fixing" the timeline.');
+                }
             }
         },
         monastery_artifacts: {
@@ -758,18 +850,42 @@ const gameData = {
             options: {
                 '345': 'future.hacking_failure',
                 '246': 'future.hacking_failure',
-                '793': 'future.hacking_success',
+                '793': 'future.hacking_success_puzzle',
                 '541': 'future.hacking_failure'
             }
         },
-        hacking_success: {
-            text: 'The sequence is correct. The firewall collapses, and you gain access to the AI\'s core systems. The AI\'s voice becomes distorted and erratic. "My... my systems... what have you done?" it shrieks. The tower\'s defenses are down.',
+        hacking_success_puzzle: {
+            text: 'The sequence is correct. The firewall collapses, and you gain access to the AI\'s core systems. The AI\'s voice becomes distorted and erratic. "My... my systems... what have you done?" it shrieks. The tower\'s defenses are down. Inside the core, you find a data log from the lead scientist of the Chronos Sphere project. It reads: "I\'ve locked the final Temporal Core behind this firewall. If you are reading this, then you are either a genius hacker or... me. If it is me, then I hope you have found a better way. I am so sorry. I have to try. I have to save her."',
             options: {
-                'access core': 'future.ai_core',
+                'take core': 'future.ai_core_puzzle',
+                'read antagonist journal': 'future.antagonist_journal_2',
                 'leave': 'future.leave'
             },
             onEnter: () => {
                 inventory = inventory.filter(item => item !== 'data spike');
+            }
+        },
+        ai_core_puzzle: {
+            text: 'You take the Temporal Core (Future) from the AI\'s core.',
+            options: {
+                'leave': 'future.leave'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Temporal Core (Future)')) {
+                    inventory.push('Temporal Core (Future)');
+                }
+                paradoxScore += 50;
+            }
+        },
+        antagonist_journal_2: {
+            text: 'You find another journal entry. It reads: "I am the lead scientist of the Chronos Sphere project. My... my daughter... she was lost in a temporal accident. The Sphere... it is my only hope. I will rewrite time. I will save her. No matter the cost."',
+            options: {
+                'leave': 'future.leave'
+            },
+            onEnter: () => {
+                if (!journal.includes('The antagonist is the lead scientist. They are trying to save their daughter.')) {
+                    journal.push('The antagonist is the lead scientist. They are trying to save their daughter.');
+                }
             }
         },
         hacking_failure: {

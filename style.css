@@ -42,6 +42,15 @@ body {
     color: #ffff00;
 }
 
+#journal-display {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: #a1ffb3;
+    border: 1px solid #a1ffb3;
+    padding: 10px;
+    min-height: 50px;
+}
+
 #input-container {
     display: flex;
     justify-content: center;
