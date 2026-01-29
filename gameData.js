@@ -8,7 +8,7 @@ const gameData = {
             }
         },
         room: {
-            text: 'The room is bare, with no discernible doors or windows. The walls hum with a faint energy. The only object of interest is the Chronos Sphere.',
+            text: 'The room is stark white and unnervingly sterile. The air is still and silent, except for a low, almost imperceptible hum that seems to emanate from the very walls. There are no doors, no windows, only smooth, seamless surfaces. In the exact center of the room, a single pedestal of obsidian-like material holds the Chronos Sphere, its pulsating light casting shifting patterns on the white walls.',
             options: {
                 'touch sphere': 'core.sphere'
             }
@@ -111,11 +111,22 @@ const gameData = {
             }
         },
         strange_clearing: {
-            text: 'You find a strange clearing in the jungle. In the center of the clearing, a strange symbol is carved into the ground. It seems to be a star map, but the constellations are all wrong. You also see a strange, hooded figure watching you from the edge of the clearing.',
-            options: {
-                'remember symbol': 'dino.remember_symbol',
-                'talk to hooded figure': 'dino.antagonist_encounter',
-                'leave': 'dino.intro'
+            text: () => {
+                let description = 'You find a strange clearing in the jungle. In the center of the clearing, a strange symbol is carved into the ground. It seems to be a star map, but the constellations are all wrong.';
+                if (antagonistLocation === 'dino.strange_clearing') {
+                    description += ' A strange, hooded figure is watching you from the edge of the clearing.';
+                }
+                return description;
+            },
+            options: () => {
+                let opts = {
+                    'remember symbol': 'dino.remember_symbol',
+                    'leave': 'dino.intro'
+                };
+                if (antagonistLocation === 'dino.strange_clearing') {
+                    opts['talk to hooded figure'] = 'dino.antagonist_encounter';
+                }
+                return opts;
             }
         },
         remember_symbol: {
@@ -149,9 +160,48 @@ const gameData = {
             }
         },
         ship_console: {
-            text: 'You enter the ship. The console displays a sequence of three alien symbols. A keypad below the screen shows the same symbols. It seems to be a simple pattern-matching puzzle. The symbols are: Zorp, Gleep, Floop. Below the symbols, there is a slot to insert a memory.',
+            text: 'You enter the ship. The console is active, displaying a complex star chart. A prompt asks for a three-part sequence. A hint is displayed: "The star that does not belong. The echo of the past. The first prime of the future." There is a slot for a data chip.',
             options: {
-                'press zorp gleep floop': 'dino.ship_puzzle_with_memory',
+                'use alien data chip': () => {
+                    if (inventory.includes('alien data chip')) {
+                        return 'dino.ship_console_sequence';
+                    }
+                    return 'dino.ship_console_no_chip';
+                },
+                'leave': 'dino.intro'
+            }
+        },
+        ship_console_no_chip: {
+            text: "You don't have a data chip to use.",
+            options: {
+                'back': 'dino.ship_console'
+            }
+        },
+        ship_console_sequence: {
+            text: 'You insert the data chip. The console whirs to life, displaying a keypad with various symbols. You need to enter the correct three-part sequence based on the hint.',
+            options: {
+                'symbol echo 7': 'dino.ship_console_reward',
+                'gleep zorp 9': 'dino.ship_console_fail',
+                'star music 3': 'dino.ship_console_fail',
+                'leave': 'dino.intro'
+            }
+        },
+        ship_console_reward: {
+            text: 'The console beeps and a small compartment opens, revealing a small, intricate device. You have acquired the Ancient CPU.',
+            options: {
+                'leave': 'dino.intro'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Ancient CPU')) {
+                    inventory.push('Ancient CPU');
+                }
+                inventory = inventory.filter(item => item !== 'alien data chip');
+            }
+        },
+        ship_console_fail: {
+            text: 'Incorrect sequence. The console flashes red and goes dark for a moment before resetting.',
+            options: {
+                'try again': 'dino.ship_console_sequence',
                 'leave': 'dino.intro'
             }
         },
@@ -481,14 +531,24 @@ const gameData = {
             }
         },
         tavern: {
-            text: 'You enter the tavern. It is a noisy, crowded place. A woman with a lute is singing a sad song about a lost love. A group of knights is gambling at a corner table. The innkeeper, a large, jolly man, is cleaning a mug behind the bar. You also see a strange, hooded figure sitting in a dark corner, and a mysterious stranger sipping ale by the fire.',
-            options: {
-                'talk to singer': 'past.singer_dialogue',
-                'talk to knights': 'past.knights_dialogue',
-                'talk to innkeeper': 'past.innkeeper_dialogue',
-                'talk to hooded figure': 'past.antagonist_encounter',
-                'talk to mysterious stranger': 'past.stranger_dialogue_start',
-                'leave': 'past.intro'
+            text: () => {
+                if (temporalAnomalies['high_paradox']) {
+                    return 'You enter the tavern. It is a chaotic, crowded place. A woman with a lute is singing a frantic song about the end of the world. A group of knights is fighting at a corner table. The innkeeper, a large, panicked man, is hiding behind the bar.';
+                }
+                return 'You enter the tavern. It is a noisy, crowded place. A woman with a lute is singing a sad song about a lost love. A group of knights is gambling at a corner table. The innkeeper, a large, jolly man, is cleaning a mug behind the bar. You also see a strange, hooded figure sitting in a dark corner, and a mysterious stranger sipping ale by the fire.';
+            },
+            options: () => {
+                let opts = {
+                    'talk to singer': 'past.singer_dialogue',
+                    'talk to knights': 'past.knights_dialogue',
+                    'talk to innkeeper': 'past.innkeeper_dialogue',
+                    'talk to mysterious stranger': 'past.stranger_dialogue_start',
+                    'leave': 'past.intro'
+                };
+                if (antagonistLocation === 'past.tavern') {
+                    opts['talk to hooded figure'] = 'past.antagonist_encounter';
+                }
+                return opts;
             }
         },
         singer_dialogue: {
@@ -664,13 +724,65 @@ const gameData = {
             }
         },
         tech_lab: {
-            text: 'You enter the lab. It\'s clean, sterile, and filled with advanced equipment you don\'t recognize. A large holographic terminal hums in the center of the room, displaying complex temporal equations.',
-            options: {
-                'use terminal': 'future.use_terminal',
-                'craft stabilizer': 'future.craft_stabilizer',
-                'get explosive': 'future.get_explosive',
-                'confront antagonist': 'future.antagonist_encounter',
-                'leave': 'future.intro'
+            text: () => {
+                let description = 'You enter the lab. It\'s clean, sterile, and filled with advanced equipment you don\'t recognize. A large holographic terminal hums in the center of the room, displaying complex temporal equations.';
+                if (antagonistLocation === 'future.tech_lab') {
+                    description += ' A holographic projection of the lead scientist flickers into view.';
+                }
+                return description;
+            },
+            options: () => {
+                let opts = {
+                    'use terminal': 'future.use_terminal',
+                    'craft stabilizer': 'future.craft_stabilizer',
+                    'get explosive': 'future.get_explosive',
+                    'leave': 'future.intro'
+                };
+                if (antagonistLocation === 'future.tech_lab') {
+                    opts['talk to scientist'] = 'future.tech_lab';
+                }
+                return opts;
+            },
+            dialogue: {
+                start: {
+                    text: 'A holographic projection of the lead scientist appears. "I see you\'ve made it to my lab," she says, her voice laced with a mix of weariness and determination. "But you\'re too late. I\'m on the verge of correcting the past."',
+                    options: {
+                        'i won\'t let you': 'confrontation',
+                        'why are you doing this?': 'explanation',
+                        'let\'s work together': 'cooperation'
+                    }
+                },
+                confrontation: {
+                    text: '"You can\'t stop me. You don\'t understand what\'s at stake." The projection fizzles out.',
+                    options: {
+                        'leave': 'future.intro'
+                    }
+                },
+                explanation: {
+                    text: '"My daughter... she was lost in a temporal accident. I\'m not destroying the timeline, I\'m fixing it. I\'m saving her." The projection flickers.',
+                    options: {
+                        'i\'m sorry': 'empathy',
+                        'it\'s not worth the risk': 'risk'
+                    }
+                },
+                cooperation: {
+                    text: '"Work with you? After you\'ve been meddling with my work from the start? I don\'t think so." The projection vanishes.',
+                    options: {
+                        'leave': 'future.intro'
+                    }
+                },
+                empathy: {
+                    text: 'The scientist\'s expression softens for a moment. "I... I appreciate that. But I have to do this. For her." The projection fades.',
+                    options: {
+                        'leave': 'future.intro'
+                    }
+                },
+                risk: {
+                    text: '"You\'re wrong. I can control the paradoxes. I have to." The projection disappears.',
+                    options: {
+                        'leave': 'future.intro'
+                    }
+                }
             }
         },
         get_explosive: {

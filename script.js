@@ -11,6 +11,28 @@ let paradoxScore = 0;
 let memory = [];
 let journal = [];
 let lastResponse = null;
+let currentDialogue;
+let temporalAnomalies = {};
+let antagonistLocation = null;
+const antagonistHaunts = ['dino.strange_clearing', 'past.tavern', 'future.tech_lab'];
+
+function moveAntagonist() {
+    // 25% chance to move, 25% chance to disappear, 50% chance to stay
+    const rand = Math.random();
+    if (rand < 0.25) {
+        const randomIndex = Math.floor(Math.random() * antagonistHaunts.length);
+        antagonistLocation = antagonistHaunts[randomIndex];
+    } else if (rand < 0.5) {
+        antagonistLocation = null;
+    }
+}
+
+function triggerAnomaly(anomalyName) {
+    if (!temporalAnomalies[anomalyName]) {
+        temporalAnomalies[anomalyName] = true;
+        console.log(`Temporal Anomaly triggered: ${anomalyName}`);
+    }
+}
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -26,6 +48,9 @@ function resetGame() {
 
 function updateParadoxScore() {
     paradoxScoreDisplay.textContent = `Paradox Score: ${paradoxScore}`;
+    if (paradoxScore >= 50) {
+        triggerAnomaly('high_paradox');
+    }
     if (paradoxScore >= 100) {
         gameState = 'core.paradox_ending';
     }
@@ -101,12 +126,12 @@ function handleOption(input) {
     const currentState = getCurrentState();
     if (!currentState) return false;
 
-    if (currentState.dialogue) {
+    if (currentState.dialogue && antagonistLocation === gameState) {
         currentDialogue = currentState.dialogue.start;
         return true;
     }
 
-    const options = currentState.options;
+    const options = typeof currentState.options === 'function' ? currentState.options() : currentState.options;
     if (options && options[input]) {
         if (options[input] === 'start' || options[input] === 'core.start') {
             resetGame();
@@ -127,14 +152,23 @@ function handleOption(input) {
 }
 
 function handleDialoguePuzzle(input) {
-    const currentState = getCurrentState();
-    if (currentState && currentState.dialogue) {
-        const choice = currentState.dialogue[input];
-        if (choice) {
-            lastResponse = choice.response;
-            if (choice.onChoose) {
-                choice.onChoose();
+    if (!currentDialogue) return false;
+
+    const choice = currentDialogue.options[input];
+    if (choice) {
+        const currentState = getCurrentState();
+        const nextDialogueId = choice;
+        const nextDialogue = currentState.dialogue[nextDialogueId];
+
+        if (nextDialogue) {
+            lastResponse = nextDialogue.text;
+            if (nextDialogue.onChoose) {
+                nextDialogue.onChoose();
             }
+            currentDialogue = nextDialogue;
+        } else {
+            // End of dialogue
+            currentDialogue = null;
             if (choice.nextState) {
                 gameState = choice.nextState;
                 const newCurrentState = getCurrentState();
@@ -142,8 +176,8 @@ function handleDialoguePuzzle(input) {
                     newCurrentState.onEnter();
                 }
             }
-            return true;
         }
+        return true;
     }
     return false;
 }
@@ -164,7 +198,16 @@ function processInput() {
         existingError.remove();
     }
 
-    if (!handleCommand(input) && !handleDialoguePuzzle(input) && !handleOption(input)) {
+    let commandProcessed = false;
+    if (currentDialogue) {
+        commandProcessed = handleDialoguePuzzle(input);
+    }
+
+    if (!commandProcessed) {
+        commandProcessed = handleCommand(input) || handleOption(input);
+    }
+
+    if (!commandProcessed) {
         handleInvalidInput();
     }
 
@@ -172,6 +215,7 @@ function processInput() {
     updateParadoxScore();
     updateMemory();
     updateJournal();
+    moveAntagonist();
     updateStory();
 }
 
@@ -189,19 +233,13 @@ function updateStory() {
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
-        let options;
-
-        if (currentDialogue) {
-            p.textContent = currentDialogue.text;
-            options = currentDialogue.options;
-        } else {
-            p.textContent = currentState.text;
-            options = currentState.options;
-        }
-
+        let text = typeof currentState.text === 'function' ? currentState.text() : currentState.text;
+        p.textContent = text;
         story.appendChild(p);
 
-        const optionsSource = currentState.options || currentState.dialogue;
+        let options = typeof currentState.options === 'function' ? currentState.options() : currentState.options;
+        const optionsSource = options || currentState.dialogue;
+
         if (optionsSource) {
             const optionsList = document.createElement('ul');
             for (const option in optionsSource) {
