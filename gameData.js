@@ -1,3 +1,10 @@
+const craftingRecipes = {
+    'stabilizing agent': {
+        ingredients: ['temporal dust', 'glowing mushroom'],
+        description: 'A volatile, shimmering liquid that can stabilize temporal energies.'
+    }
+};
+
 const gameData = {
     core: {
         start: {
@@ -149,14 +156,30 @@ const gameData = {
             }
         },
         ship_console: {
-            text: 'You enter the ship. The console displays a sequence of three alien symbols. A keypad below the screen shows the same symbols. It seems to be a simple pattern-matching puzzle. The symbols are: Zorp, Gleep, Floop. Below the symbols, there is a slot to insert a memory.',
+            text: 'You enter the ship. The console is active, displaying a complex interface. A message flashes on the screen: "Security Layer 1: Bypass the linguistic authentication system to proceed."',
             options: {
-                'press zorp gleep floop': 'dino.ship_puzzle_with_memory',
+                'initiate hack': 'dino.hacking_minigame_start',
                 'leave': 'dino.intro'
             }
         },
-        ship_puzzle_with_memory: {
-            text: 'You insert the memory of the strange symbol into the console. The console whirs to life, and the alien symbols on the screen begin to glow. You press the symbols in the correct order. The console beeps and a small compartment opens, revealing a small, intricate device. You have acquired the Ancient CPU.',
+        hacking_minigame_start: {
+            text: 'You initiate the hack. The console displays a riddle: "I have no voice, but I can tell you stories. I have no hands, but I can build castles in your mind. What am I?"',
+            options: {
+                'a book': 'dino.hacking_minigame_layer2',
+                'a computer': 'dino.hacking_minigame_fail',
+                'a dream': 'dino.hacking_minigame_fail'
+            }
+        },
+        hacking_minigame_layer2: {
+            text: 'Correct. Security Layer 2: Decrypt the numerical sequence. The console displays a series of numbers: 1, 1, 2, 3, 5, 8, ... What is the next number in the sequence?',
+            options: {
+                '13': 'dino.hacking_minigame_success',
+                '12': 'dino.hacking_minigame_fail',
+                '21': 'dino.hacking_minigame_fail'
+            }
+        },
+        hacking_minigame_success: {
+            text: 'Hack successful. The console beeps and a small compartment opens, revealing a small, intricate device. You have acquired the Ancient CPU.',
             options: {
                 'leave': 'dino.intro'
             },
@@ -164,6 +187,13 @@ const gameData = {
                 if (!inventory.includes('Ancient CPU')) {
                     inventory.push('Ancient CPU');
                 }
+            }
+        },
+        hacking_minigame_fail: {
+            text: 'Incorrect. The console flashes red and the security system resets. You can try again or leave the ship.',
+            options: {
+                'try again': 'dino.hacking_minigame_start',
+                'leave': 'dino.intro'
             }
         },
         jungle_path: {
@@ -251,11 +281,23 @@ const gameData = {
             }
         },
         swamp: {
-            text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water. In the middle of a deep pool, a half-submerged skeleton of a massive creature rests. In one of its eye sockets, you spot a faint, pulsating light. Sturdy vines hang from the trees overhead.',
+            text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water, and you spot a particularly large, pulsating mushroom near the edge of the pool. In the middle of a deep pool, a half-submerged skeleton of a massive creature rests. In one of its eye sockets, you spot a faint, pulsating light. Sturdy vines hang from the trees overhead.',
             options: {
+                'take mushroom': 'dino.take_mushroom',
                 'use vines': 'dino.swing_to_skeleton',
                 'swim': 'dino.swim_fail',
                 'leave': 'dino.intro'
+            }
+        },
+        take_mushroom: {
+            text: 'You carefully pick the large, glowing mushroom. It feels warm and vibrates gently in your hand.',
+            options: {
+                'leave': 'dino.swamp'
+            },
+            onEnter: () => {
+                if (!inventory.includes('glowing mushroom')) {
+                    inventory.push('glowing mushroom');
+                }
             }
         },
         swing_to_skeleton: {
@@ -396,36 +438,12 @@ const gameData = {
             options: {
                 'ask about sphere': 'past.alchemist_sphere',
                 'ask for a challenge': 'past.alchemist_riddle',
-                'ask about synthesis': 'past.alchemist_synthesis',
+                'ask about crafting': 'past.alchemist_crafting',
                 'leave': 'past.intro'
             }
         },
-        alchemist_synthesis: {
-            text: 'You ask about synthesis. The alchemist\'s eyes gleam with interest. "Ah, you are interested in the higher arts. I can create a powerful Stabilizing Agent, but I require a potent energy source and a catalyst. The Temporal Dust I gave you can serve as the catalyst, but you will need to find an energy source on your own."',
-            options: {
-                'synthesize agent': 'past.alchemist_synthesis_success',
-                'leave': 'past.alchemist_shop'
-            }
-        },
-        alchemist_synthesis_success: {
-            text: 'You give the alchemist the Pulsating Crystal and the Temporal Dust. He combines them in a flash of light, creating a swirling, iridescent liquid. "Here you are," he says, handing you the Stabilizing Agent. "Use it wisely."',
-            options: {
-                'leave': 'past.alchemist_shop'
-            },
-            onEnter: () => {
-                if (inventory.includes('Pulsating Crystal') && inventory.includes('temporal dust')) {
-                    inventory = inventory.filter(item => item !== 'Pulsating Crystal');
-                    inventory = inventory.filter(item => item !== 'temporal dust');
-                    if (!inventory.includes('Stabilizing Agent')) {
-                        inventory.push('Stabilizing Agent');
-                    }
-                } else {
-                    gameState = 'past.alchemist_synthesis_fail';
-                }
-            }
-        },
-        alchemist_synthesis_fail: {
-            text: 'You don\'t have the necessary components. The alchemist requires a powerful energy source and a catalyst.',
+        alchemist_crafting: {
+            text: 'You ask about crafting. The alchemist nods. "I can help you with that. I can create a Stabilizing Agent, but I will need a few things. Bring me some temporal dust and a glowing mushroom, and I can craft it for you. Just type \'craft stabilizing agent\' when you have the ingredients."',
             options: {
                 'leave': 'past.alchemist_shop'
             }
@@ -661,6 +679,17 @@ const gameData = {
                 'market': 'future.cyber_market',
                 'enter lab': 'future.tech_lab',
                 'leave': 'future.leave'
+            },
+            onEnter: () => {
+                if (suspicion >= 50) {
+                    gameState = 'future.detained';
+                }
+            }
+        },
+        detained: {
+            text: 'As you move through the city, a high-pitched whine pierces the air. A squad of security drones descends, their optical sensors glowing a menacing red. "Citizen," one intones, its voice a cold, synthetic monotone, "your recent activities have been flagged as anomalous. You are to be detained for questioning." You are escorted to a sterile interrogation room. Your journey has come to an end.',
+            options: {
+                'start over': 'core.start'
             }
         },
         tech_lab: {
@@ -779,24 +808,47 @@ const gameData = {
             }
         },
         data_broker: {
-            text: 'The data broker offers you a choice: a glimpse of your own future, or a data spike that can be used to disrupt the city\'s AI. "Both have their uses," he says with a grin, "but be warned, knowledge of the future can be a dangerous thing."',
+            text: 'The data broker offers you a choice: a glimpse of your own future, a data spike that can be used to disrupt the city\'s AI, or information about how to avoid the AI\'s detection. "All have their uses," he says with a grin, "but be warned, knowledge of the future can be a dangerous thing."',
             options: {
                 'glimpse future': 'future.glimpse_future',
                 'take data spike': 'future.data_spike',
+                'ask about AI detection': 'future.ask_about_ai_detection',
                 'leave': 'future.cyber_market'
             }
         },
+        ask_about_ai_detection: {
+            text: 'The data broker leans in close. "The AI is always watching," he whispers. "But for a price, I can erase your digital footprint. It will cost you... say, an alien data chip?"',
+            options: {
+                'bribe broker': 'future.bribe_broker',
+                'leave': 'future.data_broker'
+            }
+        },
+        bribe_broker: {
+            text: () => {
+                if (inventory.includes('alien data chip')) {
+                    inventory = inventory.filter(item => item !== 'alien data chip');
+                    suspicion = 0;
+                    return 'The data broker smiles. "A pleasure doing business with you," he says, as he takes the chip. Your suspicion has been reset.';
+                } else {
+                    return 'You don\'t have the alien data chip to trade.';
+                }
+            },
+            options: {
+                'leave': 'future.data_broker'
+            }
+        },
         glimpse_future: {
-            text: 'You see a vision of yourself, old and gray, but with a look of contentment. The vision is fleeting, but it fills you with a sense of peace. Your paradox score has increased.',
+            text: 'You see a vision of yourself, old and gray, but with a look of contentment. The vision is fleeting, but it fills you with a sense of peace. Your paradox score has increased, and you feel the AI\'s attention on you.',
             options: {
                 'leave': 'future.cyber_market'
             },
             onEnter: () => {
                 paradoxScore += 30;
+                suspicion += 25;
             }
         },
         data_spike: {
-            text: 'You take the data spike. It feels cool to the touch and hums with a faint energy. This could be useful.',
+            text: 'You take the data spike. It feels cool to the touch and hums with a faint energy. This could be useful, but you feel the AI\'s attention on you.',
             options: {
                 'leave': 'future.cyber_market'
             },
@@ -804,6 +856,7 @@ const gameData = {
                 if (!inventory.includes('data spike')) {
                     inventory.push('data spike');
                 }
+                suspicion += 25;
             }
         },
         cooperate: {
