@@ -8,9 +8,11 @@ const journalDisplay = document.getElementById('journal-display');
 let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
+let suspicion = 0;
 let memory = [];
 let journal = [];
 let lastResponse = null;
+let currentDialogue = null;
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -148,6 +150,34 @@ function handleDialoguePuzzle(input) {
     return false;
 }
 
+function handleCrafting(input) {
+    const parts = input.split(' ');
+    if (parts[0] !== 'craft') {
+        return false;
+    }
+
+    const itemName = parts.slice(1).join(' ');
+    const recipe = craftingRecipes[itemName];
+
+    if (!recipe) {
+        lastResponse = `There is no recipe for "${itemName}".`;
+        return true;
+    }
+
+    const hasIngredients = recipe.ingredients.every(ingredient => inventory.includes(ingredient));
+
+    if (hasIngredients) {
+        recipe.ingredients.forEach(ingredient => {
+            inventory = inventory.filter(item => item !== ingredient);
+        });
+        inventory.push(itemName);
+        lastResponse = `You successfully crafted a ${itemName}.`;
+    } else {
+        lastResponse = `You don't have the necessary ingredients. You need: ${recipe.ingredients.join(', ')}.`;
+    }
+    return true;
+}
+
 
 function handleInvalidInput() {
     const p = document.createElement('p');
@@ -164,7 +194,7 @@ function processInput() {
         existingError.remove();
     }
 
-    if (!handleCommand(input) && !handleDialoguePuzzle(input) && !handleOption(input)) {
+    if (!handleCommand(input) && !handleDialoguePuzzle(input) && !handleOption(input) && !handleCrafting(input)) {
         handleInvalidInput();
     }
 
