@@ -32,8 +32,29 @@ body {
 
 #paradox-score {
     font-size: 1.1em;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     color: #ff4d4d;
+}
+
+#suspicion-level {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: #ff9900;
+}
+
+#inventory-display {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    padding: 10px;
+    min-height: 30px;
+    text-align: left;
+}
+
+#inventory-display::before {
+    content: "Inventory: ";
+    font-weight: bold;
 }
 
 #memory {

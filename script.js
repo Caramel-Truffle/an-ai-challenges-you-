@@ -2,15 +2,20 @@ const story = document.getElementById('story');
 const userInput = document.getElementById('user-input');
 const submitButton = document.getElementById('submit-button');
 const paradoxScoreDisplay = document.getElementById('paradox-score');
+const suspicionDisplay = document.getElementById('suspicion-level');
+const inventoryDisplay = document.getElementById('inventory-display');
 const memoryDisplay = document.getElementById('memory');
 const journalDisplay = document.getElementById('journal-display');
 
 let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
+let suspicion = 0;
 let memory = [];
 let journal = [];
 let lastResponse = null;
+let currentDialogue = null;
+let antagonistLocation = 'dino.strange_clearing';
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -41,6 +46,19 @@ function updateJournal() {
             journalList.appendChild(journalItem);
         });
         journalDisplay.appendChild(journalList);
+    }
+}
+
+function updateInventory() {
+    inventoryDisplay.textContent = inventory.join(', ') || 'Empty';
+}
+
+function updateSuspicion() {
+    if (gameState.startsWith('future')) {
+        suspicionDisplay.style.display = 'block';
+        suspicionDisplay.textContent = `Suspicion: ${suspicion}`;
+    } else {
+        suspicionDisplay.style.display = 'none';
     }
 }
 
@@ -101,11 +119,6 @@ function handleOption(input) {
     const currentState = getCurrentState();
     if (!currentState) return false;
 
-    if (currentState.dialogue) {
-        currentDialogue = currentState.dialogue.start;
-        return true;
-    }
-
     const options = currentState.options;
     if (options && options[input]) {
         if (options[input] === 'start' || options[input] === 'core.start') {
@@ -116,9 +129,15 @@ function handleOption(input) {
                 nextState = nextState();
             }
             gameState = nextState;
+            currentDialogue = null;
             const newCurrentState = getCurrentState();
-            if (newCurrentState && newCurrentState.onEnter) {
-                newCurrentState.onEnter();
+            if (newCurrentState) {
+                if (newCurrentState.dialogue) {
+                    currentDialogue = newCurrentState.dialogue.start;
+                }
+                if (newCurrentState.onEnter) {
+                    newCurrentState.onEnter();
+                }
             }
         }
         return true;
@@ -129,23 +148,100 @@ function handleOption(input) {
 function handleDialoguePuzzle(input) {
     const currentState = getCurrentState();
     if (currentState && currentState.dialogue) {
-        const choice = currentState.dialogue[input];
-        if (choice) {
-            lastResponse = choice.response;
-            if (choice.onChoose) {
-                choice.onChoose();
-            }
-            if (choice.nextState) {
-                gameState = choice.nextState;
-                const newCurrentState = getCurrentState();
-                if (newCurrentState && newCurrentState.onEnter) {
-                    newCurrentState.onEnter();
+        if (currentDialogue) {
+            const choice = currentDialogue.options[input];
+            if (choice) {
+                if (typeof choice === 'string') {
+                    currentDialogue = currentState.dialogue[choice];
+                } else if (typeof choice === 'object') {
+                    if (choice.onChoose) choice.onChoose();
+                    if (choice.nextState) {
+                        gameState = choice.nextState;
+                        currentDialogue = null;
+                        const newCurrentState = getCurrentState();
+                        if (newCurrentState && newCurrentState.onEnter) {
+                            newCurrentState.onEnter();
+                        }
+                    } else if (choice.response) {
+                        lastResponse = choice.response;
+                    }
                 }
+                return true;
             }
+        } else {
+            const choice = currentState.dialogue[input];
+            if (choice) {
+                lastResponse = choice.response;
+                if (choice.onChoose) {
+                    choice.onChoose();
+                }
+                if (choice.nextState) {
+                    gameState = choice.nextState;
+                    const newCurrentState = getCurrentState();
+                    if (newCurrentState && newCurrentState.onEnter) {
+                        newCurrentState.onEnter();
+                    }
+                }
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function handleCrafting(input) {
+    if (input.startsWith('craft ')) {
+        const itemToCraft = input.replace('craft ', '');
+        const recipe = gameData.craftingRecipes[itemToCraft];
+        if (recipe) {
+            const hasIngredients = recipe.ingredients.every(ingredient => inventory.includes(ingredient));
+            if (hasIngredients) {
+                recipe.ingredients.forEach(ingredient => {
+                    const index = inventory.indexOf(ingredient);
+                    if (index > -1) {
+                        inventory.splice(index, 1);
+                    }
+                });
+                inventory.push(itemToCraft);
+                lastResponse = `You successfully crafted ${itemToCraft}!`;
+                return true;
+            } else {
+                lastResponse = `You don't have the ingredients to craft ${itemToCraft}. Need: ${recipe.ingredients.join(', ')}`;
+                return true;
+            }
+        }
+        lastResponse = `Unknown recipe: ${itemToCraft}`;
+        return true;
+    }
+    return false;
+}
+
+function handlePuzzleInput(input) {
+    const currentState = getCurrentState();
+    if (currentState && currentState.puzzle) {
+        if (input === currentState.puzzle.solution) {
+            gameState = currentState.puzzle.successState;
+            const newCurrentState = getCurrentState();
+            if (newCurrentState && newCurrentState.onEnter) {
+                newCurrentState.onEnter();
+            }
+            return true;
+        } else {
+            gameState = currentState.puzzle.failState || gameState;
+            lastResponse = currentState.puzzle.failMessage || "Incorrect solution.";
             return true;
         }
     }
     return false;
+}
+
+function moveAntagonist() {
+    const locations = [
+        'dino.strange_clearing',
+        'past.tavern',
+        'future.tech_lab'
+    ];
+    antagonistLocation = locations[Math.floor(Math.random() * locations.length)];
 }
 
 
@@ -164,12 +260,33 @@ function processInput() {
         existingError.remove();
     }
 
-    if (!handleCommand(input) && !handleDialoguePuzzle(input) && !handleOption(input)) {
+    const wasHandled = handleCommand(input) ||
+                       handlePuzzleInput(input) ||
+                       handleDialoguePuzzle(input) ||
+                       handleOption(input) ||
+                       handleCrafting(input);
+
+    if (!wasHandled) {
         handleInvalidInput();
+    } else {
+        if (gameState.startsWith('future')) {
+            suspicion += 2;
+            if (suspicion >= 50) {
+                gameState = 'future.arrested';
+            }
+        }
+
+        moveAntagonist();
+        if (antagonistLocation === gameState) {
+            lastResponse = "The hooded figure is here! You feel a chill as they watch you.";
+            paradoxScore += 5;
+        }
     }
 
     userInput.value = '';
     updateParadoxScore();
+    updateSuspicion();
+    updateInventory();
     updateMemory();
     updateJournal();
     updateStory();
@@ -189,22 +306,21 @@ function updateStory() {
     const currentState = getCurrentState();
     if (currentState) {
         const p = document.createElement('p');
-        let options;
+        let currentOptions;
 
         if (currentDialogue) {
             p.textContent = currentDialogue.text;
-            options = currentDialogue.options;
+            currentOptions = currentDialogue.options;
         } else {
             p.textContent = currentState.text;
-            options = currentState.options;
+            currentOptions = currentState.options;
         }
 
         story.appendChild(p);
 
-        const optionsSource = currentState.options || currentState.dialogue;
-        if (optionsSource) {
+        if (currentOptions) {
             const optionsList = document.createElement('ul');
-            for (const option in optionsSource) {
+            for (const option in currentOptions) {
                 const listItem = document.createElement('li');
                 const link = document.createElement('a');
                 link.href = '#';
@@ -229,4 +345,6 @@ userInput.addEventListener('keydown', (event) => {
     }
 });
 
+updateInventory();
+updateSuspicion();
 updateStory();
