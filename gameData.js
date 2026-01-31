@@ -1,4 +1,12 @@
 const gameData = {
+    craftingRecipes: {
+        'temporal stabilizer': {
+            ingredients: ['Ancient CPU', 'Stabilizing Agent']
+        },
+        'dino-lure': {
+            ingredients: ['strange plant']
+        }
+    },
     core: {
         start: {
             text: 'You find yourself in a sterile, white room. A single pedestal stands in the center, upon which rests a pulsating, crystalline sphere. A voice echoes in your mind: "The Chronos Sphere is your key and your prison. To escape, you must navigate the currents of time. But be warned, another traveler is lost in time. They will try to stop you, twisting the past to their own design. Do not let them." A faint, feminine whisper echoes in your mind as the voice fades: "He lies..."',
@@ -45,6 +53,12 @@ const gameData = {
                 'start over': 'core.start'
             }
         },
+        arrested_ending: {
+            text: 'The city\'s security forces have apprehended you. Your presence was too disruptive, and your high suspicion level flagged you as a temporal anomaly. You are locked away in a high-security facility, your journey through time at an end.',
+            options: {
+                'start over': 'core.start'
+            }
+        },
         antagonist_wins_ending: {
             text: 'You are trapped in a timeless void, a prison of the antagonist\'s making. You have failed. The antagonist has won. Their plan to reshape the past is now unopposed. You can only watch as the timeline is rewritten, your own existence fading into nothingness.',
             options: {
@@ -83,8 +97,8 @@ const gameData = {
             text: 'You discover a set of ancient ruins, impossibly old. A stone altar stands in the center, covered in a language you instinctively understand. It reads: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"',
             options: {
                 'an echo': 'dino.ruins_puzzle_success',
-                'a ghost': 'dino.ruins_puzzle_fail',
-                'music': 'dino.ruins_puzzle_fail',
+                'a ghost': 'dino.ruins_hint',
+                'music': 'dino.ruins_hint',
                 'leave': 'dino.intro'
             },
             onEnter: () => {
@@ -104,9 +118,10 @@ const gameData = {
                 }
             }
         },
-        ruins_puzzle_fail: {
-            text: 'The altar remains silent. The answer is incorrect.',
+        ruins_hint: {
+            text: 'The altar remains silent. You feel you are close, but the answer is not quite right. A faint whisper seems to repeat your last breath... Think of something that repeats what you say.',
             options: {
+                'try again': 'dino.ancient_ruins',
                 'leave': 'dino.intro'
             }
         },
@@ -823,7 +838,8 @@ const gameData = {
             options: {
                 'past': 'past.intro',
                 'return to sphere': 'core.sphere',
-                'approach tower': 'future.ai_tower'
+                'approach tower': 'future.ai_tower',
+                'back to intro': 'future.intro'
             }
         },
         ai_tower: {
@@ -837,6 +853,12 @@ const gameData = {
                     return 'future.ai_tower_no_spike';
                 },
                 'leave': 'future.leave'
+            },
+            onEnter: () => {
+                if (suspicion > 30) {
+                    lastResponse = "The AI scans you intensely. 'Your temporal signature is highly irregular. Security has been alerted.'";
+                    suspicion += 10;
+                }
             }
         },
         ai_tower_no_spike: {
@@ -846,12 +868,12 @@ const gameData = {
             }
         },
         hacking_puzzle: {
-            text: 'You initiate the hack. The AI\'s firewall appears as a series of logic gates. To bypass it, you must enter the correct three-symbol sequence. The terminal provides a clue: "The first is the largest prime under 10, the second is the square of the first prime, and the third is a triangle number whose digits sum to 3." A keypad shows symbols for numbers 1 through 9.',
-            options: {
-                '345': 'future.hacking_failure',
-                '246': 'future.hacking_failure',
-                '793': 'future.hacking_success_puzzle',
-                '541': 'future.hacking_failure'
+            text: 'You initiate the hack. The AI\'s firewall appears as a series of logic gates. To bypass it, you must enter the correct three-digit code. The terminal provides a clue: "The first is the largest prime under 10, the second is the square of the second prime, and the third is a triangle number whose digits sum to 3."',
+            puzzle: {
+                solution: '793',
+                successState: 'future.hacking_success_puzzle',
+                failState: 'future.hacking_failure',
+                failMessage: 'Incorrect code. Countermeasures initiated.'
             }
         },
         hacking_success_puzzle: {
@@ -866,8 +888,9 @@ const gameData = {
             }
         },
         ai_core_puzzle: {
-            text: 'You take the Temporal Core (Future) from the AI\'s core.',
+            text: 'You take the Temporal Core (Future) from the AI\'s core. Beside it, you see a small, glowing key.',
             options: {
+                'take key': 'future.ai_core_key',
                 'leave': 'future.leave'
             },
             onEnter: () => {
@@ -875,6 +898,17 @@ const gameData = {
                     inventory.push('Temporal Core (Future)');
                 }
                 paradoxScore += 50;
+            }
+        },
+        ai_core_key: {
+            text: 'You take the temporal key. It hums with a familiar energy.',
+            options: {
+                'leave': 'future.leave'
+            },
+            onEnter: () => {
+                if (!inventory.includes('temporal key')) {
+                    inventory.push('temporal key');
+                }
             }
         },
         antagonist_journal_2: {
@@ -955,6 +989,16 @@ const gameData = {
                 if (!memory.includes('antagonist motive')) {
                     memory.push('antagonist motive');
                 }
+                if (!journal.includes('The antagonist is the lead scientist. They are trying to save their daughter.')) {
+                    journal.push('The antagonist is the lead scientist. They are trying to save their daughter.');
+                }
+            }
+        },
+        arrested: {
+            text: 'SECURITY BREACH! High suspicion levels detected. The city\'s AI has flagged you for immediate termination.',
+            options: {
+                'surrender': 'core.arrested_ending',
+                'resist': 'core.arrested_ending'
             }
         }
     }
