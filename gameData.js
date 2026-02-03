@@ -28,7 +28,7 @@ const gameData = {
             }
         },
         master_of_time_ending: {
-            text: 'You insert the key into the pedestal. The Temporal Stabilizer in your inventory activates, humming with a powerful energy. The Chronos Sphere resonates with the device, and the room dissolves into a breathtaking vista of the entire timeline. You see the past, present, and future laid out before you, not as a chaotic mess, but as a beautiful, intricate tapestry. You have not only escaped, but you have become a master of time, a guardian of the timeline. You are free to go anywhere, anywhen. The universe unfolds before you like a map, every moment a destination. You see Dr. Thorne\'s path and gently nudge it, ensuring both safety and stability without a single paradox. Time is no longer a prison, but a canvas for your design.',
+            text: 'You insert the key into the pedestal. The Temporal Stabilizer in your inventory activates, humming with a powerful energy. Beside it, Elara\'s locket begins to glow with a soft, comforting light. The Chronos Sphere resonates with these tokens of science and love, and the room dissolves into a breathtaking vista of the entire timeline. You see the past, present, and future laid out before you, not as a chaotic mess, but as a beautiful, intricate tapestry. You have not only escaped, but you have become a master of time, a guardian of the timeline. You are free to go anywhere, anywhen. The universe unfolds before you like a map, every moment a destination. You see Dr. Thorne\'s path and gently nudge it, ensuring both safety and stability. In this corrected timeline, the accident never happens. Elara grows up, and Thorne remains a brilliant, happy man. Time is no longer a prison, but a canvas for your design.',
             options: {
                 'play again': 'core.start'
             }
@@ -94,7 +94,66 @@ const gameData = {
                 'strange clearing': 'dino.strange_clearing',
                 'blocked cave': 'dino.blocked_cave',
                 'ancient ruins': 'dino.ancient_ruins',
+                'enter tall grass': 'dino.tall_grass',
                 'return to sphere': 'core.sphere'
+            }
+        },
+        tall_grass: {
+            text: 'You enter a field of towering, prehistoric grass. It\'s thick and restricts your vision. You can hear rustling all around you. You need to be careful. Do you move "forward", "left", or "right"? Or perhaps you should "listen" first?',
+            options: {
+                'forward': 'dino.tall_grass_move',
+                'left': 'dino.tall_grass_move',
+                'right': 'dino.tall_grass_move',
+                'leave': 'dino.intro'
+            },
+            onEnter: () => {
+                if (!journal.includes('Lost in the tall grass. Something is stalking me.')) {
+                    journal.push('Lost in the tall grass. Something is stalking me.');
+                }
+            }
+        },
+        predator_nearby: {
+            text: 'The rustling is much louder now. A low growl vibrates through the ground. You are very close to a predator. Which way now?',
+            options: {
+                'forward': 'dino.tall_grass_fail',
+                'left': 'dino.tall_grass_move',
+                'right': 'dino.tall_grass_move'
+            }
+        },
+        tall_grass_move: {
+            text: 'You move through the grass. The rustling continues.',
+            options: {
+                'forward': 'dino.tall_grass_move',
+                'left': 'dino.predator_nearby',
+                'right': 'dino.find_toy',
+                'leave': 'dino.intro'
+            }
+        },
+        find_toy: {
+            text: 'You emerge into a small, sunlit patch in the grass. There, half-buried in the soil, is a small, tarnished silver locket. It seems entirely out of place in this prehistoric world. You open it and see a holographic photo of a young girl.',
+            options: {
+                'take locket': 'dino.locket_acquired',
+                'leave': 'dino.intro'
+            }
+        },
+        locket_acquired: {
+            text: 'You take the locket. It feels strangely heavy. On the back, a name is engraved: "Elara".',
+            options: {
+                'leave': 'dino.intro'
+            },
+            onEnter: () => {
+                if (!inventory.includes("Elara's Locket")) {
+                    inventory.push("Elara's Locket");
+                }
+                if (!journal.includes('Found a silver locket with the name "Elara" in the prehistoric era.')) {
+                    journal.push('Found a silver locket with the name "Elara" in the prehistoric era.');
+                }
+            }
+        },
+        tall_grass_fail: {
+            text: 'You walk right into the path of a hungry Utahraptor. You don\'t stand a chance.',
+            options: {
+                'start over': 'core.start'
             }
         },
         ancient_ruins: {
@@ -469,7 +528,37 @@ const gameData = {
                 'ask about sphere': 'past.alchemist_sphere',
                 'ask for a challenge': 'past.alchemist_riddle',
                 'ask about synthesis': 'past.alchemist_synthesis',
+                'say "Aurum"': () => {
+                    if (memory.includes('alchemist_password')) {
+                        return 'past.alchemist_secret';
+                    }
+                    return 'past.alchemist_confused';
+                },
                 'leave': 'past.intro'
+            }
+        },
+        alchemist_confused: {
+            text: '"Aurum? Yes, that is Latin for gold, traveler. Why do you mention it?"',
+            options: {
+                'back': 'past.alchemist_shop'
+            }
+        },
+        alchemist_secret: {
+            text: 'The alchemist\'s eyes widen. He looks around to make sure the shop is empty, then beckons you closer. "So, you are a friend of the order. I see. I have something that might help you on your journey." He pulls a small, glowing vial from beneath the counter. "This is a Concentrated Temporal Catalyst. It will make your stabilizer much more effective."',
+            options: {
+                'take catalyst': 'past.catalyst_acquired',
+                'leave': 'past.alchemist_shop'
+            }
+        },
+        catalyst_acquired: {
+            text: 'You take the Concentrated Temporal Catalyst. It pulses with a warm, golden light.',
+            options: {
+                'leave': 'past.alchemist_shop'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Temporal Catalyst')) {
+                    inventory.push('Temporal Catalyst');
+                }
             }
         },
         alchemist_synthesis: {
@@ -560,7 +649,22 @@ const gameData = {
                 'talk to innkeeper': 'past.innkeeper_dialogue',
                 'talk to hooded figure': 'past.antagonist_encounter',
                 'talk to mysterious stranger': 'past.stranger_dialogue_start',
+                'eavesdrop on knights': 'past.eavesdrop_knights',
                 'leave': 'past.intro'
+            }
+        },
+        eavesdrop_knights: {
+            text: 'You lean against a nearby pillar, pretending to watch the singer while straining to hear the knights\' conversation. "...and then the old alchemist told me," one knight whispers, "that if I ever needed his secret stash, I just had to mention \'Aurum\' to him. Funny old coot."',
+            options: {
+                'leave': 'past.tavern'
+            },
+            onEnter: () => {
+                if (!memory.includes('alchemist_password')) {
+                    memory.push('alchemist_password');
+                }
+                if (!journal.includes('The alchemist\'s secret password is "Aurum".')) {
+                    journal.push('The alchemist\'s secret password is "Aurum".');
+                }
             }
         },
         singer_dialogue: {
@@ -716,6 +820,16 @@ const gameData = {
                         }
                     },
                     nextState: 'past.tavern'
+                },
+                'show elara\'s locket': {
+                    response: 'The stranger\'s eyes widen as they see the locket. They reach out a trembling hand, then pull back. "Where... where did you find this? This belongs to... to Elara. My Elara." They look at you with a mix of shock and hope. "You... you have found a piece of her. Perhaps... perhaps there is a way to fix this without breaking the world." The stranger stands up, their eyes glowing with a soft, blue light. "Keep it safe, traveler. It may be the key to everything." The stranger disappears in a shimmer of light.',
+                    onChoose: () => {
+                        if (!memory.includes('stranger motive')) memory.push('stranger motive');
+                        if (!journal.includes('The stranger is Dr. Thorne. He recognized Elara\'s locket.')) {
+                            journal.push('The stranger is Dr. Thorne. He recognized Elara\'s locket.');
+                        }
+                    },
+                    nextState: 'past.tavern'
                 }
             }
         },
@@ -799,13 +913,25 @@ const gameData = {
             }
         },
         cyber_market: {
-            text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a strange, ancient CPU. You also see a data broker offering information about the future.',
+            text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a strange, ancient CPU. You also see a data broker offering information about the future. A shady dealer in the corner is selling "stealth decoys".',
             options: {
                 'buy crystal': 'future.buy_crystal',
                 'talk to data broker': 'future.data_broker',
+                'buy decoy': 'future.buy_decoy',
                 'visit clinic': 'future.black_market_clinic',
                 'visit data archives': 'future.data_archives',
                 'leave': 'future.leave'
+            }
+        },
+        buy_decoy: {
+            text: 'You buy a stealth decoy. "This will throw the drones off your scent," the dealer whispers.',
+            options: {
+                'leave': 'future.cyber_market'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Stealth Decoy')) {
+                    inventory.push('Stealth Decoy');
+                }
             }
         },
         buy_crystal: {
@@ -908,7 +1034,9 @@ const gameData = {
             options: {
                 'past': 'past.intro',
                 'return to sphere': 'core.sphere',
-                'approach tower': 'future.ai_tower'
+                'approach tower': 'future.ai_tower',
+                'visit tech lab': 'future.tech_lab',
+                'return to city center': 'future.intro'
             }
         },
         ai_tower: {
@@ -917,11 +1045,36 @@ const gameData = {
                 'ask about sphere': 'future.ai_sphere',
                 'use data spike': () => {
                     if (inventory.includes('data spike')) {
-                        return 'future.hacking_puzzle';
+                        return 'future.hacking_security_node_1';
                     }
                     return 'future.ai_tower_no_spike';
                 },
                 'leave': 'future.leave'
+            }
+        },
+        hacking_security_node_1: {
+            text: 'Hacking Security Node 1: Entry level encryption. Clue: "Prime number between 10 and 15."',
+            options: {
+                '11': 'future.hacking_security_node_2',
+                '12': 'future.hacking_fail_node',
+                '13': 'future.hacking_security_node_2'
+            }
+        },
+        hacking_security_node_2: {
+            text: 'Hacking Security Node 2: System level encryption. Clue: "The next number in the sequence: 1, 1, 2, 3, 5, ..."',
+            options: {
+                '7': 'future.hacking_fail_node',
+                '8': 'future.hacking_puzzle',
+                '9': 'future.hacking_fail_node'
+            }
+        },
+        hacking_fail_node: {
+            text: 'The hack failed! Security systems are alerted.',
+            options: {
+                'back': 'future.ai_tower'
+            },
+            onEnter: () => {
+                suspicion += 20;
             }
         },
         ai_tower_no_spike: {
