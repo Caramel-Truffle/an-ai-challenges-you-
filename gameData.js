@@ -28,13 +28,13 @@ const gameData = {
             }
         },
         master_of_time_ending: {
-            text: 'You insert the key into the pedestal. The Temporal Stabilizer in your inventory activates, humming with a powerful energy. The Chronos Sphere resonates with the device, and the room dissolves into a breathtaking vista of the entire timeline. You see the past, present, and future laid out before you, not as a chaotic mess, but as a beautiful, intricate tapestry. You have not only escaped, but you have become a master of time, a guardian of the timeline. You are free to go anywhere, anywhen.',
+            text: 'You insert the key into the pedestal. The Temporal Stabilizer in your inventory activates, humming with a powerful energy. The Chronos Sphere resonates with the device, and the room dissolves into a breathtaking vista of the entire timeline. You see the past, present, and future laid out before you, not as a chaotic mess, but as a beautiful, intricate tapestry. You have not only escaped, but you have become a master of time, a guardian of the timeline. You are free to go anywhere, anywhen. The universe unfolds before you like a map, every moment a destination. You see Dr. Thorne\'s path and gently nudge it, ensuring both safety and stability without a single paradox. Time is no longer a prison, but a canvas for your design.',
             options: {
                 'play again': 'core.start'
             }
         },
         true_ending: {
-            text: 'You insert the key into the pedestal. The Temporal Stabilizer components in your inventory resonate with the Sphere, stabilizing the temporal energies. The room dissolves, not into a chaotic vortex, but into a serene landscape of swirling nebulae. You have escaped and mastered the currents of time. You are free to choose your own destiny.',
+            text: 'You insert the key into the pedestal. The Temporal Stabilizer components in your inventory resonate with the Sphere, stabilizing the temporal energies. The room dissolves, not into a chaotic vortex, but into a serene landscape of swirling nebulae. You have escaped and mastered the currents of time. You are free to choose your own destiny. You step out into a world that is finally stable, the Chronos Sphere humming its final song. Dr. Thorne\'s daughter, Elara, is seen in the distance, a reminder of the choice you didn\'t have to make. You are the master of your own time now.',
             options: {
                 'play again': 'core.start'
             }
@@ -59,9 +59,27 @@ const gameData = {
             }
         },
         sacrifice_ending: {
-            text: 'You choose to help the antagonist. You pour the energy of the Temporal Cores into the Chronos Sphere, not to escape, but to rewrite the past and save the antagonist\'s daughter. The world dissolves into a brilliant light. You do not know if you have succeeded, or if you have just created a new, even more terrible timeline. But you do know that you have made a choice. You have sacrificed your own escape for the sake of another. You have become a true master of time.',
+            text: 'You choose to help the antagonist. You pour the energy of the Temporal Cores into the Chronos Sphere, not to escape, but to rewrite the past and save the antagonist\'s daughter. The world dissolves into a brilliant light. You do not know if you have succeeded, or if you have just created a new, even more terrible timeline. But you do know that you have made a choice. You have sacrificed your own escape for the sake of another. You have become a true master of time. The timeline ripples and settles into a new, unfamiliar shape. Dr. Thorne and Elara are reunited in a past that never was, their joy a faint echo in your mind. You remain in the void, a silent guardian of the world you gave everything to save.',
             options: {
                 'play again': 'core.start'
+            }
+        },
+        rift_1: {
+            text: 'As you activate the key, the world doesn\'t dissolve. Instead, it bleeds. You are standing in the prehistoric jungle, but the towering ferns are interspersed with flickering holographic neon billboards advertising bio-implants. A robotic drone from the future hums overhead, scanning a passing Stegosaurus.',
+            options: {
+                'move forward': 'core.rift_2'
+            }
+        },
+        rift_2: {
+            text: 'The scene shifts. You are in the medieval marketplace, but the cobblestones are cracked and overgrown with massive prehistoric moss. A Tyrannosaurus Rex wanders through the stalls, casually knocking over a blacksmith\'s anvil while a confused knight watches from a distance, clutching a futuristic data spike.',
+            options: {
+                'move forward': 'core.rift_3'
+            }
+        },
+        rift_3: {
+            text: 'Finally, you reach the future city. The neon towers are still there, but they are being reclaimed by the jungle. Vines thick as tree trunks wrap around the skyscrapers, and the artificial sky is filled with the smoke of a distant volcano. The Chronos Sphere sits at the center of this chaos, pulsating with a frantic, uneven rhythm.',
+            options: {
+                'reach the sphere': 'core.final_choice'
             }
         }
     },
@@ -251,11 +269,23 @@ const gameData = {
             }
         },
         swamp: {
-            text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water. In the middle of a deep pool, a half-submerged skeleton of a massive creature rests. In one of its eye sockets, you spot a faint, pulsating light. Sturdy vines hang from the trees overhead.',
+            text: 'You enter the swamp. The air is thick with the smell of decay. Strange, glowing fungi illuminate the murky water. In the middle of a deep pool, a half-submerged skeleton of a massive creature rests. In one of its eye sockets, you spot a faint, pulsating light. Sturdy vines hang from the trees overhead. You also notice a strange, weeping tree nearby, oozing a thick, amber-colored sap.',
             options: {
                 'use vines': 'dino.swing_to_skeleton',
                 'swim': 'dino.swim_fail',
+                'collect prehistoric sap': 'dino.collect_sap',
                 'leave': 'dino.intro'
+            }
+        },
+        collect_sap: {
+            text: 'You use a small container to collect the thick, glowing sap from the tree. It feels warm and seems to have unique chemical properties. This might be useful for stabilization.',
+            options: {
+                'leave': 'dino.swamp'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Prehistoric Sap')) {
+                    inventory.push('Prehistoric Sap');
+                }
             }
         },
         swing_to_skeleton: {
@@ -323,11 +353,41 @@ const gameData = {
             }
         },
         monastery: {
-            text: 'You leave the bustling marketplace and follow a winding path up a hill to a secluded monastery. The monks are known for their wisdom and their collection of rare artifacts. An elderly monk greets you at the gate.',
+            text: 'You leave the bustling marketplace and follow a winding path up a hill to a secluded monastery. The monks are known for their wisdom and their collection of rare artifacts. An elderly monk greets you at the gate. You notice a heavy, sealed stone door at the back of the courtyard, pulsing with a faint, low frequency.',
             options: {
                 'ask about artifacts': 'past.monastery_artifacts',
                 'visit library': 'past.library',
+                'examine stone door': 'past.stone_door',
                 'leave': 'past.intro'
+            }
+        },
+        stone_door: {
+            text: 'The door is made of solid granite, with no visible keyhole or handle. It seems completely immovable.',
+            options: {
+                'use sonic resonator': () => {
+                    if (inventory.includes('Sonic Resonator')) {
+                        return 'past.hidden_chamber';
+                    }
+                    return 'past.stone_door_fail';
+                },
+                'leave': 'past.monastery'
+            }
+        },
+        stone_door_fail: {
+            text: 'You try to push the door, but it doesn\'t budge. You need something more than brute force to open this.',
+            options: {
+                'leave': 'past.monastery'
+            }
+        },
+        hidden_chamber: {
+            text: 'You activate the Sonic Resonator. The stone door vibrates violently for a moment, then slides smoothly into the wall. Inside, you find a small, private study. A nameplate on the desk reads: "Dr. Aris Thorne".',
+            options: {
+                'leave': 'past.monastery'
+            },
+            onEnter: () => {
+                if (!journal.includes("The lead scientist, Dr. Aris Thorne, once sought solace in this monastery before the accident that took his daughter, Elara.")) {
+                    journal.push("The lead scientist, Dr. Aris Thorne, once sought solace in this monastery before the accident that took his daughter, Elara.");
+                }
             }
         },
         library: {
@@ -337,11 +397,23 @@ const gameData = {
                 'a scroll': 'past.library_puzzle_fail',
                 'a map': 'past.library_puzzle_fail',
                 'read antagonist journal': 'past.antagonist_journal_1',
+                'examine ancient manuscript': 'past.ancient_manuscript',
                 'leave': 'past.monastery'
             },
             onEnter: () => {
                 if (!journal.includes('The monastery library has a locked chest with a riddle.')) {
                     journal.push('The monastery library has a locked chest with a riddle.');
+                }
+            }
+        },
+        ancient_manuscript: {
+            text: 'You carefully unroll a fragile, yellowed manuscript. It seems to be a collection of riddles and lore from a much older civilization. One passage is circled: "The key to the ancient voices is that which repeats but has no breath of its own."',
+            options: {
+                'leave': 'past.library'
+            },
+            onEnter: () => {
+                if (!journal.includes("Manuscript clue: 'that which repeats but has no breath'.")) {
+                    journal.push("Manuscript clue: 'that which repeats but has no breath'.");
                 }
             }
         },
@@ -669,8 +741,20 @@ const gameData = {
                 'use terminal': 'future.use_terminal',
                 'craft stabilizer': 'future.craft_stabilizer',
                 'get explosive': 'future.get_explosive',
+                'take sonic resonator': 'future.take_resonator',
                 'confront antagonist': 'future.antagonist_encounter',
                 'leave': 'future.intro'
+            }
+        },
+        take_resonator: {
+            text: 'You find a sleek, handheld device labeled "Sonic Resonator". The description says it uses frequency resonance to vibrate molecules, effectively "unlocking" molecularly-dense barriers. You take it.',
+            options: {
+                'leave': 'future.tech_lab'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Sonic Resonator')) {
+                    inventory.push('Sonic Resonator');
+                }
             }
         },
         get_explosive: {
@@ -696,21 +780,22 @@ const gameData = {
                 'leave': 'future.intro'
             },
             onEnter: () => {
-                if (inventory.includes('ancient cpu') && inventory.includes('stabilizing agent')) {
+                if (inventory.includes('ancient cpu') && inventory.includes('stabilizing agent') && inventory.includes('Prehistoric Sap')) {
                     inventory = inventory.filter(item => item !== 'ancient cpu');
                     inventory = inventory.filter(item => item !== 'stabilizing agent');
+                    inventory = inventory.filter(item => item !== 'Prehistoric Sap');
                     if (!inventory.includes('temporal stabilizer')) {
                         inventory.push('temporal stabilizer');
                     }
                 } else {
-                    gameState = 'future.craft_stabilizer_fail';
+                    navigateToState('future.craft_stabilizer_fail');
                 }
             }
         },
         craft_stabilizer_fail: {
-            text: 'You don\'t have the necessary components to craft the Temporal Stabilizer.',
+            text: 'You don\'t have the necessary components to craft the Temporal Stabilizer. You need an Ancient CPU, a Stabilizing Agent, and Prehistoric Sap.',
             options: {
-                'leave': 'future.antagonist_encounter'
+                'leave': 'future.tech_lab'
             }
         },
         cyber_market: {

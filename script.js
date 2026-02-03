@@ -11,6 +11,22 @@ let paradoxScore = 0;
 let memory = [];
 let journal = [];
 let lastResponse = null;
+let currentDialogue = null;
+
+function navigateToState(statePath) {
+    const [period, state] = statePath.split('.');
+    if (gameData[period] && gameData[period][state]) {
+        gameState = statePath;
+        currentDialogue = null;
+        const newState = gameData[period][state];
+        if (newState.onEnter) {
+            newState.onEnter();
+        }
+        updateStory();
+    } else {
+        console.error(`State not found: ${statePath}`);
+    }
+}
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
@@ -26,8 +42,14 @@ function resetGame() {
 
 function updateParadoxScore() {
     paradoxScoreDisplay.textContent = `Paradox Score: ${paradoxScore}`;
+    const gameContainer = document.getElementById('game-container');
+    if (paradoxScore >= 50) {
+        gameContainer.classList.add('paradox-glitch');
+    } else {
+        gameContainer.classList.remove('paradox-glitch');
+    }
     if (paradoxScore >= 100) {
-        gameState = 'core.paradox_ending';
+        navigateToState('core.paradox_ending');
     }
 }
 
@@ -74,16 +96,17 @@ const commands = {
     'use key': () => {
         if ((gameState === 'core.start' || gameState === 'future.leave' || gameState === 'core.sphere') && inventory.includes('temporal key')) {
             const hasAllCores = inventory.includes('Temporal Core (Dino)') && inventory.includes('Temporal Core (Past)') && inventory.includes('Temporal Core (Future)');
-            const knowsMotive = journal.includes('The antagonist is the lead scientist. They are trying to save their daughter.');
+            const knowsMotive = journal.includes('The antagonist is the lead scientist. They are trying to save their daughter.') ||
+                               journal.some(j => j.includes('Dr. Aris Thorne') && j.includes('Elara'));
 
             if (hasAllCores && knowsMotive) {
-                gameState = 'core.final_choice';
+                navigateToState('core.rift_1');
             } else if (inventory.includes('stabilizer used')) {
-                gameState = 'core.master_of_time_ending';
+                navigateToState('core.master_of_time_ending');
             } else if (inventory.includes('temporal dust') && paradoxScore <= 50) {
-                gameState = 'core.true_ending';
+                navigateToState('core.true_ending');
             } else {
-                gameState = 'core.end';
+                navigateToState('core.end');
             }
         }
     }
@@ -115,11 +138,7 @@ function handleOption(input) {
             if (typeof nextState === 'function') {
                 nextState = nextState();
             }
-            gameState = nextState;
-            const newCurrentState = getCurrentState();
-            if (newCurrentState && newCurrentState.onEnter) {
-                newCurrentState.onEnter();
-            }
+            navigateToState(nextState);
         }
         return true;
     }
@@ -136,11 +155,7 @@ function handleDialoguePuzzle(input) {
                 choice.onChoose();
             }
             if (choice.nextState) {
-                gameState = choice.nextState;
-                const newCurrentState = getCurrentState();
-                if (newCurrentState && newCurrentState.onEnter) {
-                    newCurrentState.onEnter();
-                }
+                navigateToState(choice.nextState);
             }
             return true;
         }
