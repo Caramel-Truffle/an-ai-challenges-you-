@@ -67,20 +67,65 @@ const gameData = {
         rift_1: {
             text: 'As you activate the key, the world doesn\'t dissolve. Instead, it bleeds. You are standing in the prehistoric jungle, but the towering ferns are interspersed with flickering holographic neon billboards advertising bio-implants. A robotic drone from the future hums overhead, scanning a passing Stegosaurus.',
             options: {
+                'stabilize with dust': () => {
+                    if (inventory.includes('temporal dust')) {
+                        inventory = inventory.filter(item => item !== 'temporal dust');
+                        paradoxScore = Math.max(0, paradoxScore - 20);
+                        return 'core.rift_2';
+                    }
+                    return 'core.rift_1_fail';
+                },
                 'move forward': 'core.rift_2'
             }
+        },
+        rift_1_fail: {
+            text: 'You don\'t have the temporal dust needed to stabilize this rift. The instability grows.',
+            options: {
+                'move forward': 'core.rift_2'
+            },
+            onEnter: () => { paradoxScore += 10; }
         },
         rift_2: {
             text: 'The scene shifts. You are in the medieval marketplace, but the cobblestones are cracked and overgrown with massive prehistoric moss. A Tyrannosaurus Rex wanders through the stalls, casually knocking over a blacksmith\'s anvil while a confused knight watches from a distance, clutching a futuristic data spike.',
             options: {
+                'stabilize with catalyst': () => {
+                    if (inventory.includes('Temporal Catalyst')) {
+                        inventory = inventory.filter(item => item !== 'Temporal Catalyst');
+                        paradoxScore = Math.max(0, paradoxScore - 20);
+                        return 'core.rift_3';
+                    }
+                    return 'core.rift_2_fail';
+                },
                 'move forward': 'core.rift_3'
             }
+        },
+        rift_2_fail: {
+            text: 'You don\'t have the temporal catalyst needed to stabilize this rift. The colors bleed further.',
+            options: {
+                'move forward': 'core.rift_3'
+            },
+            onEnter: () => { paradoxScore += 10; }
         },
         rift_3: {
             text: 'Finally, you reach the future city. The neon towers are still there, but they are being reclaimed by the jungle. Vines thick as tree trunks wrap around the skyscrapers, and the artificial sky is filled with the smoke of a distant volcano. The Chronos Sphere sits at the center of this chaos, pulsating with a frantic, uneven rhythm.',
             options: {
+                'stabilize with agent': () => {
+                    if (inventory.includes('Stabilizing Agent')) {
+                        inventory = inventory.filter(item => item !== 'Stabilizing Agent');
+                        paradoxScore = Math.max(0, paradoxScore - 20);
+                        return 'core.final_choice';
+                    }
+                    return 'core.rift_3_fail';
+                },
                 'reach the sphere': 'core.final_choice'
             }
+        },
+        rift_3_fail: {
+            text: 'You don\'t have the stabilizing agent needed to stabilize this rift. The end is near.',
+            options: {
+                'reach the sphere': 'core.final_choice'
+            },
+            onEnter: () => { paradoxScore += 10; }
         }
     },
     dino: {
@@ -99,10 +144,10 @@ const gameData = {
             }
         },
         tall_grass: {
-            text: 'You enter a field of towering, prehistoric grass. It\'s thick and restricts your vision. You can hear rustling all around you. You need to be careful. Do you move "forward", "left", or "right"? Or perhaps you should "listen" first?',
+            text: 'You enter a field of towering, prehistoric grass. It\'s thick and restricts your vision. You can hear a low, rhythmic rustling to your left. You need to be careful. Do you move "forward", "left", or "right"? Or perhaps you should "listen", "crouch", or "freeze"?',
             options: {
-                'forward': 'dino.tall_grass_move',
-                'left': 'dino.tall_grass_move',
+                'forward': () => lastAction === 'crouch' ? 'dino.tall_grass_move' : 'dino.tall_grass_fail',
+                'left': 'dino.predator_nearby',
                 'right': 'dino.tall_grass_move',
                 'leave': 'dino.intro'
             },
@@ -113,11 +158,11 @@ const gameData = {
             }
         },
         predator_nearby: {
-            text: 'The rustling is much louder now. A low growl vibrates through the ground. You are very close to a predator. Which way now?',
+            text: 'The rustling stops, replaced by heavy, wet breathing right in front of you. A low growl vibrates through the ground. You are very close to a predator. It seems to react to sudden movement. Which way now?',
             options: {
                 'forward': 'dino.tall_grass_fail',
-                'left': 'dino.tall_grass_move',
-                'right': 'dino.tall_grass_move'
+                'left': () => lastAction === 'freeze' ? 'dino.tall_grass_move' : 'dino.tall_grass_fail',
+                'right': () => lastAction === 'freeze' ? 'dino.find_toy' : 'dino.tall_grass_fail'
             }
         },
         tall_grass_move: {
@@ -457,6 +502,7 @@ const gameData = {
                 'a map': 'past.library_puzzle_fail',
                 'read antagonist journal': 'past.antagonist_journal_1',
                 'examine ancient manuscript': 'past.ancient_manuscript',
+                'search for keys': 'past.library_search_keys',
                 'leave': 'past.monastery'
             },
             onEnter: () => {
@@ -491,6 +537,18 @@ const gameData = {
             text: 'The chest remains locked. The answer is incorrect.',
             options: {
                 'leave': 'past.monastery'
+            }
+        },
+        library_search_keys: {
+            text: 'You search behind the rows of ancient tomes. Hidden in a hollowed-out book, you find a complex, futuristic-looking Encryption Key.',
+            options: {
+                'take key': 'past.library',
+                'leave': 'past.library'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Encryption Key')) {
+                    inventory.push('Encryption Key');
+                }
             }
         },
         antagonist_journal_1: {
@@ -619,7 +677,20 @@ const gameData = {
             text: 'You enter the blacksmith\'s forge. The air is hot and filled with the sound of hammering. The blacksmith is a large, muscular man. "What do you want?" he grunts.',
             options: {
                 'ask about metal': 'past.blacksmith_metal',
+                'search for notes': 'past.blacksmith_notes',
                 'leave': 'past.intro'
+            }
+        },
+        blacksmith_notes: {
+            text: 'While the blacksmith is busy at the anvil, you find a scrapped ledger. It contains sketches of the Chronos Sphere and a set of coordinates for a meeting in the tavern.',
+            options: {
+                'take ledger': 'past.blacksmith',
+                'leave': 'past.blacksmith'
+            },
+            onEnter: () => {
+                if (!inventory.includes('Scrapped Ledger')) {
+                    inventory.push('Scrapped Ledger');
+                }
             }
         },
         blacksmith_metal: {
@@ -650,7 +721,25 @@ const gameData = {
                 'talk to hooded figure': 'past.antagonist_encounter',
                 'talk to mysterious stranger': 'past.stranger_dialogue_start',
                 'eavesdrop on knights': 'past.eavesdrop_knights',
+                'go to secret meeting': () => (inventory.includes('Scrapped Ledger') && memory.includes('alchemist_password')) ? 'past.secret_meeting' : 'past.secret_meeting_fail',
                 'leave': 'past.intro'
+            }
+        },
+        secret_meeting: {
+            text: 'You follow the instructions in the ledger and use the password "Aurum" to gain entry to a private room. Inside, you find a collection of holographic logs. Dr. Aris Thorne was here, planning to stabilize the past to ensure his daughter\'s survival. You realize he isn\'t just a scientist; he\'s a desperate father who has lost everything.',
+            options: {
+                'leave': 'past.tavern'
+            },
+            onEnter: () => {
+                if (!journal.includes('Dr. Aris Thorne is using the past to ensure Elara survives in his original timeline.')) {
+                    journal.push('Dr. Aris Thorne is using the past to ensure Elara survives in his original timeline.');
+                }
+            }
+        },
+        secret_meeting_fail: {
+            text: 'You try to find the secret meeting, but without the correct password and directions, you only find a locked storage room.',
+            options: {
+                'leave': 'past.tavern'
             }
         },
         eavesdrop_knights: {
@@ -1053,11 +1142,10 @@ const gameData = {
             }
         },
         hacking_security_node_1: {
-            text: 'Hacking Security Node 1: Entry level encryption. Clue: "Prime number between 10 and 15."',
+            text: 'Hacking Security Node 1: Entry level encryption. This node seems to require a specific decryption key from a different era to proceed.',
             options: {
-                '11': 'future.hacking_security_node_2',
-                '12': 'future.hacking_fail_node',
-                '13': 'future.hacking_security_node_2'
+                'use encryption key': () => inventory.includes('Encryption Key') ? 'future.hacking_security_node_2' : 'future.hacking_fail_node',
+                'back': 'future.ai_tower'
             }
         },
         hacking_security_node_2: {
@@ -1104,13 +1192,16 @@ const gameData = {
             }
         },
         ai_core_puzzle: {
-            text: 'You take the Temporal Core (Future) from the AI\'s core.',
+            text: 'You take the Temporal Core (Future) and the hidden temporal key from the AI\'s core.',
             options: {
                 'leave': 'future.leave'
             },
             onEnter: () => {
                 if (!inventory.includes('Temporal Core (Future)')) {
                     inventory.push('Temporal Core (Future)');
+                }
+                if (!inventory.includes('temporal key')) {
+                    inventory.push('temporal key');
                 }
                 paradoxScore += 50;
             }

@@ -14,6 +14,7 @@ let memory = [];
 let journal = [];
 let lastResponse = null;
 let currentDialogue = null;
+let lastAction = null;
 
 function navigateToState(statePath) {
     const [period, state] = statePath.split('.');
@@ -114,10 +115,25 @@ function updateMemory() {
 }
 
 const commands = {
+    'help': () => {
+        lastResponse = "Available commands: 'help', 'inventory', 'listen', 'use <item>', 'crouch', 'freeze'.";
+    },
+    'inventory': () => {
+        lastResponse = inventory.length > 0 ? "You are carrying: " + inventory.join(', ') : "Your inventory is empty.";
+    },
+    'crouch': () => {
+        lastAction = 'crouch';
+        lastResponse = "You crouch low to the ground, trying to stay hidden.";
+    },
+    'freeze': () => {
+        lastAction = 'freeze';
+        lastResponse = "You stand perfectly still, barely breathing.";
+    },
     'use temporal dust': () => {
         if (inventory.includes('temporal dust')) {
             paradoxScore = Math.max(0, paradoxScore - 30);
             inventory = inventory.filter(item => item !== 'temporal dust');
+            lastResponse = "You use the temporal dust to mend the timeline. Paradox Score reduced.";
         }
     },
     'use stabilizer': () => {
