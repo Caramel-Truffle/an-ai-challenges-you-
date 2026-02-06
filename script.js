@@ -1,25 +1,54 @@
-const story = document.getElementById('story');
+const storyDisplay = document.getElementById('story');
+const chronicleDisplay = document.getElementById('chronicle');
 const userInput = document.getElementById('user-input');
 const submitButton = document.getElementById('submit-button');
 const paradoxScoreDisplay = document.getElementById('paradox-score');
 const suspicionDisplay = document.getElementById('suspicion-level');
-const memoryDisplay = document.getElementById('memory');
-const journalDisplay = document.getElementById('journal-display');
+const reputationDisplay = document.getElementById('reputation-level');
+const journalEntriesDisplay = document.getElementById('journal-entries');
 
 let gameState = 'core.start';
 let inventory = [];
 let paradoxScore = 0;
 let suspicion = 0;
+let reputation = 0; // -100 to 100
 let memory = [];
 let journal = [];
 let lastResponse = null;
 let currentDialogue = null;
+let chronicle = [];
+
+function updateChronicle(text, type = 'story') {
+    if (!text) return;
+    const entry = document.createElement('div');
+    entry.className = `chronicle-entry ${type}`;
+    entry.textContent = text;
+    chronicleDisplay.appendChild(entry);
+    chronicleDisplay.scrollTop = chronicleDisplay.scrollHeight;
+}
+
+function triggerParadoxEvent() {
+    if (paradoxScore > 20 && Math.random() < (paradoxScore / 200)) {
+        const events = [
+            "The air around you ripples like water. You see a version of yourself walking past, but they don't notice you.",
+            "A sudden flash of light blinds you. When your vision clears, the colors of the world seem shifted for a moment.",
+            "You hear a whisper in your own voice, but you haven't spoken. 'We've been here before,' it says.",
+            "Your hands momentarily become translucent. You can see the structures of the room right through them.",
+            "Time seems to stutter. A bird in the distance repeats the same second of flight three times before moving on."
+        ];
+        const event = events[Math.floor(Math.random() * events.length)];
+        updateChronicle(`[PARADOX EVENT] ${event}`, 'response');
+        paradoxScore += 2;
+    }
+}
 
 function navigateToState(statePath) {
     const [period, state] = statePath.split('.');
     if (gameData[period] && gameData[period][state]) {
         gameState = statePath;
         currentDialogue = null;
+
+        triggerParadoxEvent();
 
         // Apply theme based on period
         const gameContainer = document.getElementById('game-container');
@@ -29,19 +58,28 @@ function navigateToState(statePath) {
         else if (period === 'future') gameContainer.classList.add('future-theme');
 
         const newState = gameData[period][state];
+
+        // Narrative update
+        updateChronicle(newState.text);
+
         if (newState.onEnter) {
             newState.onEnter();
         }
 
         if (newState.dialogue && !newState.options) {
             currentDialogue = newState.dialogue.start;
+            updateChronicle(currentDialogue.text, 'dialogue');
         }
 
-        // Future era specific logic: moving adds a bit of suspicion
+        // Future era specific logic: moving adds suspicion
         if (period === 'future' && state !== 'intro' && !state.includes('fail')) {
-            suspicion = Math.min(100, suspicion + 2);
+            let increment = 2;
+            if (inventory.includes('Bio-ID Chip')) increment = 1;
+            if (inventory.includes('Stealth Decoy')) increment = Math.max(0, increment - 1);
+            suspicion = Math.min(100, suspicion + increment);
         }
 
+        updateStats();
         updateStory();
     } else {
         console.error(`State not found: ${statePath}`);
@@ -50,66 +88,52 @@ function navigateToState(statePath) {
 
 function getCurrentState() {
     const [period, state] = gameState.split('.');
-    if (gameData[period] && gameData[period][state]) {
-        return gameData[period][state];
-    }
-    return null;
+    return gameData[period] ? gameData[period][state] : null;
 }
 
 function resetGame() {
     location.reload();
 }
 
-function updateParadoxScore() {
+function updateStats() {
     paradoxScoreDisplay.textContent = `Paradox Score: ${paradoxScore}`;
+    suspicionDisplay.textContent = `Suspicion: ${suspicion}%`;
+
+    let repText = 'Neutral';
+    if (reputation > 50) repText = 'Heroic';
+    else if (reputation > 10) repText = 'Trusted';
+    else if (reputation < -50) repText = 'Villainous';
+    else if (reputation < -10) repText = 'Suspicious';
+    reputationDisplay.textContent = `Reputation: ${repText}`;
+
     const gameContainer = document.getElementById('game-container');
     if (paradoxScore >= 50) {
         gameContainer.classList.add('paradox-glitch');
     } else {
         gameContainer.classList.remove('paradox-glitch');
     }
-    checkGameOver();
-}
 
-function updateSuspicion() {
-    suspicionDisplay.textContent = `Suspicion: ${suspicion}%`;
+    // Journal update
+    journalEntriesDisplay.innerHTML = '';
+    journal.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'journal-entry';
+        div.textContent = `• ${item}`;
+        journalEntriesDisplay.appendChild(div);
+    });
+
     checkGameOver();
 }
 
 function checkGameOver() {
     if (paradoxScore >= 100) {
-        navigateToState('core.paradox_ending');
+        if (!gameState.includes('ending')) {
+            navigateToState('core.paradox_ending');
+        }
     } else if (suspicion >= 100) {
-        // Find if we are already in an encounter or ending to avoid loop
         if (!gameState.includes('antagonist_encounter') && !gameState.includes('ending')) {
             navigateToState('future.antagonist_encounter');
         }
-    }
-}
-
-function updateJournal() {
-    journalDisplay.innerHTML = '';
-    if (journal.length > 0) {
-        const journalList = document.createElement('ul');
-        journal.forEach(item => {
-            const journalItem = document.createElement('li');
-            journalItem.textContent = item;
-            journalList.appendChild(journalItem);
-        });
-        journalDisplay.appendChild(journalList);
-    }
-}
-
-function updateMemory() {
-    memoryDisplay.innerHTML = '';
-    if (memory.length > 0) {
-        const memoryList = document.createElement('ul');
-        memory.forEach(item => {
-            const memoryItem = document.createElement('li');
-            memoryItem.textContent = item;
-            memoryList.appendChild(memoryItem);
-        });
-        memoryDisplay.appendChild(memoryList);
     }
 }
 
@@ -118,6 +142,7 @@ const commands = {
         if (inventory.includes('temporal dust')) {
             paradoxScore = Math.max(0, paradoxScore - 30);
             inventory = inventory.filter(item => item !== 'temporal dust');
+            lastResponse = "You sprinkle the temporal dust. The air around you shimmers, and the feeling of wrongness fades slightly.";
         }
     },
     'use stabilizer': () => {
@@ -125,6 +150,7 @@ const commands = {
             paradoxScore = 0;
             inventory = inventory.filter(item => item !== 'temporal stabilizer');
             inventory.push('stabilizer used');
+            lastResponse = "The Temporal Stabilizer hums to life, anchoring you in time and erasing the paradoxes you've caused.";
         }
     },
     'use decoy': () => {
@@ -135,10 +161,15 @@ const commands = {
         }
     },
     'listen': () => {
-        if (gameState.startsWith('dino.tall_grass') || gameState === 'dino.predator_nearby') {
-            if (gameState === 'dino.predator_nearby') {
+        const state = gameState;
+        if (state.startsWith('dino.tall_grass') || state === 'dino.predator_nearby' || state.includes('grass')) {
+            if (state.includes('rustle')) {
+                lastResponse = "The rustling is rhythmic and getting closer. Something is hunting by sound.";
+            } else if (state.includes('breathing')) {
+                lastResponse = "The breathing is heavy and hot. It's right on top of you. DON'T MOVE.";
+            } else if (state === 'dino.predator_nearby') {
                 lastResponse = "You hear heavy breathing and clicking sounds directly ahead. DON'T GO FORWARD.";
-            } else if (gameState === 'dino.tall_grass') {
+            } else if (state === 'dino.tall_grass') {
                 lastResponse = "You hear rustling to the left. It sounds like something big.";
             } else {
                 lastResponse = "You hear the wind whistling through the grass and a faint metallic clinking to the right.";
@@ -147,11 +178,26 @@ const commands = {
             lastResponse = "You hear the natural sounds of the era.";
         }
     },
+    'crouch': () => {
+        if (gameState.includes('rustle')) {
+            lastResponse = "You drop low into the thick grass. A massive shadow passes overhead, but it doesn't see you.";
+            navigateToState('dino.tall_grass_safe');
+        } else {
+            lastResponse = "You crouch down, but there's no immediate threat to hide from.";
+        }
+    },
+    'freeze': () => {
+        if (gameState.includes('breathing')) {
+            lastResponse = "You hold your breath, becoming as still as a statue. A snout sniffs the air inches from your face, then retreats.";
+            navigateToState('dino.tall_grass_safe');
+        } else {
+            lastResponse = "You freeze in place, observing your surroundings.";
+        }
+    },
     'use key': () => {
         if ((gameState === 'core.start' || gameState === 'future.leave' || gameState === 'core.sphere') && inventory.includes('temporal key')) {
             const hasAllCores = inventory.includes('Temporal Core (Dino)') && inventory.includes('Temporal Core (Past)') && inventory.includes('Temporal Core (Future)');
-            const knowsMotive = journal.includes('The antagonist is the lead scientist. They are trying to save their daughter.') ||
-                               journal.some(j => j.includes('Dr. Aris Thorne') && j.includes('Elara'));
+            const knowsMotive = journal.some(j => (j.includes('Dr. Aris Thorne') && j.includes('Elara')) || j.includes('save her'));
 
             if (hasAllCores && knowsMotive) {
                 navigateToState('core.rift_1');
@@ -169,6 +215,7 @@ const commands = {
 function handleCommand(input) {
     if (commands[input]) {
         commands[input]();
+        if (lastResponse) updateChronicle(lastResponse, 'response');
         return true;
     }
     return false;
@@ -180,14 +227,15 @@ function handleOption(input) {
 
     if (currentState.dialogue && !currentDialogue) {
         currentDialogue = currentState.dialogue.start;
+        updateChronicle(currentDialogue.text, 'dialogue');
         return true;
     }
 
     const options = currentState.options;
     if (options) {
-        // Case-insensitive lookup
         const optionKey = Object.keys(options).find(key => key.toLowerCase() === input);
         if (optionKey) {
+            updateChronicle(`> ${optionKey}`, 'input');
             const choice = options[optionKey];
             if (choice === 'start' || choice === 'core.start') {
                 resetGame();
@@ -205,56 +253,49 @@ function handleOption(input) {
 }
 
 function handleDialoguePuzzle(input) {
-    const activeDialogue = currentDialogue || (getCurrentState() && getCurrentState().dialogue);
+    const currentState = getCurrentState();
+    const activeDialogue = currentDialogue || (currentState && currentState.dialogue);
     if (activeDialogue) {
-        // If we are looking at the start of a dialogue defined in the state
         const dialogueSource = currentDialogue ? currentDialogue : activeDialogue;
-
-        // Handle options in the current dialogue node
         let choice = null;
-        if (dialogueSource.options) {
-            const optionKey = Object.keys(dialogueSource.options).find(key => key.toLowerCase() === input);
-            if (optionKey) choice = dialogueSource.options[optionKey];
-        } else {
-            const optionKey = Object.keys(dialogueSource).find(key => key.toLowerCase() === input);
-            if (optionKey) choice = dialogueSource[optionKey];
-        }
 
-        // Auto-continue logic
+        const optionsSource = dialogueSource.options || dialogueSource;
+        const optionKey = Object.keys(optionsSource).find(key => key.toLowerCase() === input);
+        if (optionKey) choice = optionsSource[optionKey];
+
         if (!choice && input === 'continue' && dialogueSource.nextState) {
             choice = dialogueSource.nextState;
         }
 
         if (choice) {
+            updateChronicle(`> ${input}`, 'input');
             if (typeof choice === 'string') {
-                // It's a redirect to another dialogue node or state
                 if (choice.includes('.')) {
                     navigateToState(choice);
-                } else if (getCurrentState().dialogue[choice]) {
-                    currentDialogue = getCurrentState().dialogue[choice];
+                } else if (currentState.dialogue[choice]) {
+                    currentDialogue = currentState.dialogue[choice];
+                    updateChronicle(currentDialogue.text, 'dialogue');
                 }
                 return true;
             }
 
-            // It's a complex choice object
             lastResponse = choice.response || choice.text;
-            if (choice.onChoose) {
-                choice.onChoose();
-            }
-            if (choice.onEnter) {
-                choice.onEnter();
-            }
+            if (lastResponse) updateChronicle(lastResponse, 'dialogue');
+
+            if (choice.onChoose) choice.onChoose();
+            if (choice.onEnter) choice.onEnter();
 
             if (choice.nextState) {
                 if (choice.nextState.includes('.')) {
                     navigateToState(choice.nextState);
-                } else if (getCurrentState().dialogue[choice.nextState]) {
-                    currentDialogue = getCurrentState().dialogue[choice.nextState];
+                } else if (currentState.dialogue[choice.nextState]) {
+                    currentDialogue = currentState.dialogue[choice.nextState];
+                    updateChronicle(currentDialogue.text, 'dialogue');
                 }
             } else if (choice.options) {
                 currentDialogue = choice;
             } else {
-                currentDialogue = null; // End of dialogue
+                currentDialogue = null;
             }
             return true;
         }
@@ -262,23 +303,19 @@ function handleDialoguePuzzle(input) {
     return false;
 }
 
-
 function handleInvalidInput() {
     const p = document.createElement('p');
     p.className = 'error-message';
-    p.style.color = '#ff4d4d';
     p.textContent = 'Invalid command. Try again.';
-    story.appendChild(p);
+    storyDisplay.appendChild(p);
 }
 
 function processInput() {
     const input = userInput.value.toLowerCase().trim();
     if (!input) return;
 
-    const existingError = story.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
-    }
+    const existingError = storyDisplay.querySelector('.error-message');
+    if (existingError) existingError.remove();
 
     let handled = handleCommand(input);
     if (!handled) handled = handleDialoguePuzzle(input);
@@ -288,24 +325,13 @@ function processInput() {
         handleInvalidInput();
     } else {
         userInput.value = '';
-        updateParadoxScore();
-        updateSuspicion();
-        updateMemory();
-        updateJournal();
+        updateStats();
         updateStory();
     }
 }
 
 function updateStory() {
-    story.innerHTML = '';
-
-    if (lastResponse) {
-        const p = document.createElement('p');
-        p.classList.add('dialogue-response');
-        p.textContent = lastResponse;
-        story.appendChild(p);
-        lastResponse = null;
-    }
+    storyDisplay.innerHTML = '';
 
     const currentState = getCurrentState();
     if (currentState) {
@@ -323,7 +349,7 @@ function updateStory() {
             options = currentState.options;
         }
 
-        story.appendChild(p);
+        storyDisplay.appendChild(p);
 
         const optionsSource = options || (currentDialogue ? null : currentState.dialogue);
         if (optionsSource) {
@@ -333,24 +359,23 @@ function updateStory() {
                 const link = document.createElement('a');
                 link.href = '#';
                 link.textContent = option;
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
                     userInput.value = option;
                     processInput();
                 });
                 listItem.appendChild(link);
                 optionsList.appendChild(listItem);
             }
-            story.appendChild(optionsList);
+            storyDisplay.appendChild(optionsList);
         }
     }
 }
 
 submitButton.addEventListener('click', processInput);
-userInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        processInput();
-    }
+userInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') processInput();
 });
 
+// Initial load
 navigateToState('core.start');
