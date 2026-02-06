@@ -1,21 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Chronos Sphere</title>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <h1 id="title">The Chronos Sphere</h1>
-        <div id="story">
-            <p>You find yourself in a sterile, white room. A single pedestal stands in the center, upon which rests a pulsating, crystalline sphere. A voice echoes in your mind: "The Chronos Sphere is your key and your prison. To escape, you must navigate the currents of time."</p>
+
+        <div id="stats-panel">
+            <div id="paradox-score">Paradox Score: 0</div>
+            <div id="suspicion-level">Suspicion: 0%</div>
+            <div id="reputation-level">Reputation: Neutral</div>
         </div>
-        <div id="paradox-score">Paradox Score: 0</div>
-        <div id="suspicion-level">Suspicion: 0%</div>
-        <div id="memory"></div>
-<div id="journal-display"></div>
+
+        <div id="main-content">
+            <div id="chronicle"></div>
+            <div id="story"></div>
+        </div>
+
+        <div id="journal-display">
+            <strong>Journal</strong>
+            <div id="journal-entries"></div>
+        </div>
+
         <div id="input-container">
-            <input type="text" id="user-input" placeholder="Enter your command...">
+            <input type="text" id="user-input" placeholder="Enter command..." autofocus>
             <button id="submit-button">Submit</button>
         </div>
     </div>

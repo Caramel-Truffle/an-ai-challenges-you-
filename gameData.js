@@ -65,27 +65,74 @@ const gameData = {
             }
         },
         rift_1: {
-            text: 'As you activate the key, the world doesn\'t dissolve. Instead, it bleeds. You are standing in the prehistoric jungle, but the towering ferns are interspersed with flickering holographic neon billboards advertising bio-implants. A robotic drone from the future hums overhead, scanning a passing Stegosaurus.',
+            text: 'As you activate the key, the world doesn\'t dissolve. Instead, it bleeds. You are standing in the prehistoric jungle mixed with holographic neon. The temporal pressure is immense.',
             options: {
-                'move forward': 'core.rift_2'
+                'stabilize with Temporal Dust': () => {
+                    if (inventory.includes('temporal dust')) {
+                        inventory = inventory.filter(item => item !== 'temporal dust');
+                        return 'core.rift_2';
+                    }
+                    return 'core.rift_fail';
+                },
+                'push through': () => {
+                    paradoxScore += 20;
+                    return 'core.rift_2';
+                }
             }
         },
         rift_2: {
-            text: 'The scene shifts. You are in the medieval marketplace, but the cobblestones are cracked and overgrown with massive prehistoric moss. A Tyrannosaurus Rex wanders through the stalls, casually knocking over a blacksmith\'s anvil while a confused knight watches from a distance, clutching a futuristic data spike.',
+            text: 'The scene shifts. Medieval market stalls are being crushed by prehistoric moss and a Tyrannosaurus Rex. Reality is buckling.',
             options: {
-                'move forward': 'core.rift_3'
+                'stabilize with Temporal Catalyst': () => {
+                    if (inventory.includes('Temporal Catalyst')) {
+                        inventory = inventory.filter(item => item !== 'Temporal Catalyst');
+                        return 'core.rift_3';
+                    }
+                    return 'core.rift_fail';
+                },
+                'push through': () => {
+                    paradoxScore += 20;
+                    return 'core.rift_3';
+                }
             }
         },
         rift_3: {
-            text: 'Finally, you reach the future city. The neon towers are still there, but they are being reclaimed by the jungle. Vines thick as tree trunks wrap around the skyscrapers, and the artificial sky is filled with the smoke of a distant volcano. The Chronos Sphere sits at the center of this chaos, pulsating with a frantic, uneven rhythm.',
+            text: 'You reach the future city, now a overgrown jungle. The Chronos Sphere sits at the center, its rhythm erratic. Dr. Thorne stands before it, his hand on the console.',
             options: {
-                'reach the sphere': 'core.final_choice'
+                'confront Thorne': 'core.final_confrontation'
             }
-        }
+        },
+        rift_fail: {
+            text: 'The temporal pressure is too much. You are torn apart by the conflicting timelines.',
+            options: { 'start over': 'core.start' }
+        },
+        final_confrontation: {
+            text: 'Thorne looks at you, his eyes filled with a desperate light. "I have it," he whispers. "Her pattern. It\'s right here, in the noise. I just need one more surge... one more leap." He looks at the Sphere. "You don\'t understand. If I stop now, she\'s gone forever. If I continue, this world... this moment... it might shatter. But Elara will be whole."',
+            options: {
+                'show Elara\'s Locket': () => {
+                    if (inventory.includes("Elara's Locket")) return 'core.confrontation_locket';
+                    return 'core.confrontation_no_locket';
+                },
+                'stop him by force': 'core.antagonist_wins_ending',
+                'help him': 'core.sacrifice_ending'
+            }
+        },
+        confrontation_locket: {
+            text: 'You hold out the locket. Thorne freezes. He takes it with a trembling hand, the hologram of Elara flickering to life. "This... I gave this to her on her seventh birthday." Tears stream down his face. "She\'s not just a pattern, is she? She was... she *is* my daughter. And I\'m destroying the world she would have lived in."',
+            options: {
+                'convince him to stabilize': 'core.master_of_time_ending'
+            }
+        },
+        confrontation_no_locket: {
+            text: '"You have nothing to say to me!" Thorne screams. "You are just another ghost in my way!" He initiates the final jump.',
+            options: {
+                'reach for the sphere': 'core.final_choice'
+            }
+        },
     },
     dino: {
         intro: {
-            text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, a murky swamp, a strange metallic glint in the distance, a strange clearing, a blocked cave, and some ancient ruins.',
+            text: 'The air is thick with humidity and the smell of ozone. You stand in a lush, prehistoric jungle. Towering ferns and strange, colossal flowers surround you. In the distance, a volcano spews a plume of smoke into the sky. A deep, guttural roar echoes through the trees, a chilling reminder that you are not alone. You see a narrow path winding through the jungle, a steep cliff face, a murky swamp, a strange metallic glint in the distance, a strange clearing, a blocked cave, ancient ruins, and a field of tall grass. A dense patch of flora also catches your eye.',
             options: {
                 'jungle path': 'dino.jungle_path',
                 'cliff face': 'dino.cliff_face',
@@ -95,13 +142,42 @@ const gameData = {
                 'blocked cave': 'dino.blocked_cave',
                 'ancient ruins': 'dino.ancient_ruins',
                 'enter tall grass': 'dino.tall_grass',
+                'inspect flora': 'dino.flora_patch',
                 'return to sphere': 'core.sphere'
+            }
+        },
+        flora_patch: {
+            text: 'You find a patch of rare, prehistoric plants. Some have bioluminescent petals, others have thick, waxy leaves. You remember the alchemist in the medieval era mentioning rare catalysts.',
+            options: {
+                'collect Chronos-Fern': 'dino.collect_fern',
+                'collect Ember-Moss': 'dino.collect_moss',
+                'leave': 'dino.intro'
+            }
+        },
+        collect_fern: {
+            text: 'You carefully harvest the Chronos-Fern. Its leaves shimmer with a faint, blue light. This looks like a powerful temporal catalyst.',
+            options: { 'leave': 'dino.intro' },
+            onEnter: () => {
+                if (!inventory.includes('Chronos-Fern')) {
+                    inventory.push('Chronos-Fern');
+                    journal.push('Collected a Chronos-Fern. The alchemist might be interested in this.');
+                }
+            }
+        },
+        collect_moss: {
+            text: 'You scrape some Ember-Moss from a nearby rock. It feels warm to the touch. This could be useful for high-energy reactions.',
+            options: { 'leave': 'dino.intro' },
+            onEnter: () => {
+                if (!inventory.includes('Ember-Moss')) {
+                    inventory.push('Ember-Moss');
+                    journal.push('Collected Ember-Moss. It radiates a strange heat.');
+                }
             }
         },
         tall_grass: {
             text: 'You enter a field of towering, prehistoric grass. It\'s thick and restricts your vision. You can hear rustling all around you. You need to be careful. Do you move "forward", "left", or "right"? Or perhaps you should "listen" first?',
             options: {
-                'forward': 'dino.tall_grass_move',
+                'forward': 'dino.tall_grass_rustle',
                 'left': 'dino.tall_grass_move',
                 'right': 'dino.tall_grass_move',
                 'leave': 'dino.intro'
@@ -112,20 +188,43 @@ const gameData = {
                 }
             }
         },
+        tall_grass_rustle: {
+            text: 'As you move forward, the rustling becomes rhythmic and sharp. Something is definitely following your sound. You need to "crouch" or "move" quickly.',
+            options: {
+                'move forward': 'dino.tall_grass_fail',
+                'move left': 'dino.tall_grass_fail',
+                'leave': 'dino.intro'
+            }
+        },
+        tall_grass_breathing: {
+            text: 'A hot, musk-filled breeze hits the back of your neck. You hear a low, wet wheeze. A predator is right behind you. You must "freeze" or be seen.',
+            options: {
+                'run forward': 'dino.tall_grass_fail',
+                'leave': 'dino.intro'
+            }
+        },
+        tall_grass_safe: {
+            text: 'The danger seems to have passed for a moment. The grass ahead looks thinner, but you hear more movement to the right.',
+            options: {
+                'move forward': 'dino.find_toy',
+                'move right': 'dino.tall_grass_breathing',
+                'leave': 'dino.intro'
+            }
+        },
         predator_nearby: {
             text: 'The rustling is much louder now. A low growl vibrates through the ground. You are very close to a predator. Which way now?',
             options: {
                 'forward': 'dino.tall_grass_fail',
-                'left': 'dino.tall_grass_move',
-                'right': 'dino.tall_grass_move'
+                'left': 'dino.tall_grass_rustle',
+                'right': 'dino.tall_grass_breathing'
             }
         },
         tall_grass_move: {
             text: 'You move through the grass. The rustling continues.',
             options: {
-                'forward': 'dino.tall_grass_move',
+                'forward': 'dino.tall_grass_rustle',
                 'left': 'dino.predator_nearby',
-                'right': 'dino.find_toy',
+                'right': 'dino.tall_grass_breathing',
                 'leave': 'dino.intro'
             }
         },
@@ -402,14 +501,100 @@ const gameData = {
     },
     past: {
         intro: {
-            text: 'The scent of hay and woodsmoke fills the air. You stand in a bustling medieval marketplace, the cobblestones beneath your feet worn smooth by centuries of foot traffic. Merchants hawk their wares from colorful stalls, and the air buzzes with a dozen different languages. Your sudden appearance in a flash of light has not gone unnoticed. A guard in polished steel armor eyes you suspiciously, but you manage to slip into the throng of people. You see a blacksmith\'s forge, its chimney belching black smoke, an alchemist\'s shop with a sign depicting a bubbling potion, and a raucous tavern with music spilling out of its open door. The Chronos Sphere hums gently, a familiar anchor in this unfamiliar time.',
+            text: 'The scent of hay and woodsmoke fills the air. You stand in a bustling medieval marketplace. You see a blacksmith\'s forge, an alchemist\'s shop, a raucous tavern, a hilltop monastery, and the imposing stone walls of the Local Manor.',
             options: {
                 'blacksmith': 'past.blacksmith',
                 'alchemist': 'past.alchemist_shop',
                 'tavern': 'past.tavern',
                 'visit monastery': 'past.monastery',
+                'approach manor': 'past.manor_approach',
                 'return to sphere': 'core.sphere'
             }
+        },
+        manor_approach: {
+            text: 'The manor is heavily guarded. The main gates are barred, but you see a small servant\'s entrance and a low wall that looks climbable.',
+            options: {
+                'bribe guard': 'past.manor_bribe',
+                'sneak through servant entrance': 'past.manor_stealth',
+                'climb wall': 'past.manor_climb',
+                'leave': 'past.intro'
+            }
+        },
+        manor_bribe: {
+            text: 'The guard eyes you greedily. "A few coins might make me look the other way," he whispers.',
+            options: {
+                'give coins': () => {
+                    if (reputation > 0) {
+                        return 'past.manor_courtyard';
+                    }
+                    return 'past.manor_bribe_fail';
+                },
+                'leave': 'past.manor_approach'
+            }
+        },
+        manor_bribe_fail: {
+            text: '"I don\'t take bribes from suspicious characters like you," the guard says, pushing you away. Your reputation precedes you.',
+            options: { 'leave': 'past.manor_approach' }
+        },
+        manor_stealth: {
+            text: 'You slip through the servant\'s entrance, avoiding the busy kitchen staff. You are now in the manor\'s inner courtyard.',
+            options: {
+                'enter library': 'past.manor_vault_search',
+                'leave': 'past.manor_approach'
+            }
+        },
+        manor_climb: {
+            text: 'You manage to scale the wall, but a loose stone falls, alerting the dogs. You have to move fast!',
+            options: {
+                'hide in shadows': 'past.manor_courtyard',
+                'run for it': 'past.manor_fail'
+            },
+            onEnter: () => { reputation -= 5; }
+        },
+        manor_courtyard: {
+            text: 'You are in the courtyard. The Lord\'s private vault is just ahead, but it requires a specific code or a very steady hand.',
+            options: {
+                'use "Aurum"': () => {
+                    if (memory.includes('alchemist_password')) return 'past.manor_vault_open';
+                    return 'past.manor_vault_fail';
+                },
+                'pick lock': 'past.manor_vault_pick',
+                'leave': 'past.intro'
+            }
+        },
+        manor_vault_search: {
+            text: 'You find the Lord\'s study. Papers are scattered everywhere. You search for anything related to the Chronos Sphere or Dr. Thorne.',
+            options: {
+                'search desk': 'past.manor_ledger',
+                'leave': 'past.intro'
+            }
+        },
+        manor_ledger: {
+            text: 'You find a ledger detailing shipments of "strange, humming metal" to the hilltop monastery. It mentions a "Dr. Thorne" as the recipient. You have acquired the Blacksmith\'s Ledger.',
+            options: { 'leave': 'past.intro' },
+            onEnter: () => {
+                if (!inventory.includes("Blacksmith's Ledger")) {
+                    inventory.push("Blacksmith's Ledger");
+                    journal.push("Found a ledger linking Dr. Thorne to the monastery's secret shipments.");
+                }
+            }
+        },
+        manor_vault_open: {
+            text: 'The password works! The vault clicks open, revealing a cache of ancient scrolls and a strange, glowing data spike.',
+            options: { 'take data spike': 'past.manor_spike_acquired', 'leave': 'past.intro' }
+        },
+        manor_spike_acquired: {
+            text: 'You take the data spike. It looks futuristic, out of place in this era.',
+            options: { 'leave': 'past.intro' },
+            onEnter: () => {
+                if (!inventory.includes('data spike')) {
+                    inventory.push('data spike');
+                }
+            }
+        },
+        manor_fail: {
+            text: 'The guards catch you and throw you in the dungeon. Your journey ends here.',
+            options: { 'start over': 'core.start' }
         },
         monastery: {
             text: 'You leave the bustling marketplace and follow a winding path up a hill to a secluded monastery. The monks are known for their wisdom and their collection of rare artifacts. An elderly monk greets you at the gate. You notice a heavy, sealed stone door at the back of the courtyard, pulsing with a faint, low frequency.',
@@ -439,13 +624,23 @@ const gameData = {
             }
         },
         hidden_chamber: {
-            text: 'You activate the Sonic Resonator. The stone door vibrates violently for a moment, then slides smoothly into the wall. Inside, you find a small, private study. A nameplate on the desk reads: "Dr. Aris Thorne".',
+            text: 'You activate the Sonic Resonator. The stone door vibrates violently for a moment, then slides smoothly into the wall. Inside, you find a small, private study. A nameplate on the desk reads: "Dr. Aris Thorne". A framed photograph shows a man and a young girl laughing in a garden.',
             options: {
+                'read diary': 'past.thorne_diary',
                 'leave': 'past.monastery'
             },
             onEnter: () => {
                 if (!journal.includes("The lead scientist, Dr. Aris Thorne, once sought solace in this monastery before the accident that took his daughter, Elara.")) {
                     journal.push("The lead scientist, Dr. Aris Thorne, once sought solace in this monastery before the accident that took his daughter, Elara.");
+                }
+            }
+        },
+        thorne_diary: {
+            text: 'The diary is filled with grief. "Day 450. The Chronos Sphere was meant to be a bridge between eras, not a tomb. Elara... she was just curious. She stepped into the field before the stabilization was complete. Now she is scattered across time, a ghost in the machine. I will find her. I will rebuild her. No matter the cost to this reality."',
+            options: { 'leave': 'past.hidden_chamber' },
+            onEnter: () => {
+                if (!journal.includes("Elara was lost during a Chronos Sphere experiment. Dr. Thorne is trying to 'rebuild' her by manipulating time.")) {
+                    journal.push("Elara was lost during a Chronos Sphere experiment. Dr. Thorne is trying to 'rebuild' her by manipulating time.");
                 }
             }
         },
@@ -528,6 +723,10 @@ const gameData = {
                 'ask about sphere': 'past.alchemist_sphere',
                 'ask for a challenge': 'past.alchemist_riddle',
                 'ask about synthesis': 'past.alchemist_synthesis',
+                'offer Chronos-Fern': () => {
+                    if (inventory.includes('Chronos-Fern')) return 'past.alchemist_fern_success';
+                    return 'past.alchemist_no_fern';
+                },
                 'say "Aurum"': () => {
                     if (memory.includes('alchemist_password')) {
                         return 'past.alchemist_secret';
@@ -536,6 +735,19 @@ const gameData = {
                 },
                 'leave': 'past.intro'
             }
+        },
+        alchemist_fern_success: {
+            text: 'The alchemist\'s eyes light up. "A Chronos-Fern! I haven\'t seen one of these in decades. You are truly a remarkable traveler." He takes the fern and hands you a vial of pure temporal energy. "This will serve as an excellent catalyst."',
+            options: { 'leave': 'past.alchemist_shop' },
+            onEnter: () => {
+                inventory = inventory.filter(item => item !== 'Chronos-Fern');
+                inventory.push('Temporal Catalyst');
+                reputation += 20;
+            }
+        },
+        alchemist_no_fern: {
+            text: '"You don\'t have anything of interest to me, traveler."',
+            options: { 'leave': 'past.alchemist_shop' }
         },
         alchemist_confused: {
             text: '"Aurum? Yes, that is Latin for gold, traveler. Why do you mention it?"',
@@ -677,8 +889,14 @@ const gameData = {
         singer_song: {
             text: 'The singer plays a beautiful, haunting melody. The song tells the story of a knight who fell in love with a mysterious woman who could travel through time. The woman eventually left him, and the knight was heartbroken. The singer tells you that the knight is one of the men gambling in the corner.',
             options: {
+                'compliment her': 'past.singer_compliment',
                 'leave': 'past.tavern'
             }
+        },
+        singer_compliment: {
+            text: '"Thank you, traveler. It is rare to find someone who truly listens." She smiles, and you feel a sense of warmth.',
+            options: { 'leave': 'past.tavern' },
+            onEnter: () => { reputation += 10; }
         },
         knights_dialogue: {
             text: 'You approach the knights. They are loud and boisterous. "Care to join us for a game of chance, stranger?" one of them asks.',
@@ -708,6 +926,11 @@ const gameData = {
                     options: {
                         'ask about rumors': 'rumors',
                         'ask about the hooded figure': 'hooded_figure_direct',
+                        'tip him': {
+                            text: 'You leave a few extra coins. The innkeeper nods in appreciation.',
+                            onChoose: () => { reputation += 5; },
+                            nextState: 'start'
+                        },
                         'leave': 'past.tavern'
                     }
                 },
@@ -913,14 +1136,25 @@ const gameData = {
             }
         },
         cyber_market: {
-            text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a strange, ancient CPU. You also see a data broker offering information about the future. A shady dealer in the corner is selling "stealth decoys".',
+            text: 'You browse the market. A vendor is selling a data crystal that contains a wealth of historical information. "A real bargain," he says, "for someone who wants to know the past." He is asking for a strange, ancient CPU. You also see a data broker offering information about the future. A shady dealer in the corner is selling "stealth decoys". A street urchin is offering a "Bio-ID Chip" for a price.',
             options: {
                 'buy crystal': 'future.buy_crystal',
                 'talk to data broker': 'future.data_broker',
                 'buy decoy': 'future.buy_decoy',
+                'buy bio-id chip': 'future.buy_id',
                 'visit clinic': 'future.black_market_clinic',
                 'visit data archives': 'future.data_archives',
                 'leave': 'future.leave'
+            }
+        },
+        buy_id: {
+            text: 'The urchin hand you a small, flickering chip. "This will get you past the outer scanners," he whispers. "Just don\'t let them scan your retinas."',
+            options: { 'leave': 'future.cyber_market' },
+            onEnter: () => {
+                if (!inventory.includes('Bio-ID Chip')) {
+                    inventory.push('Bio-ID Chip');
+                    suspicion = Math.max(0, suspicion - 10);
+                }
             }
         },
         buy_decoy: {
@@ -1053,19 +1287,27 @@ const gameData = {
             }
         },
         hacking_security_node_1: {
-            text: 'Hacking Security Node 1: Entry level encryption. Clue: "Prime number between 10 and 15."',
+            text: 'Hacking Security Node 1: Entry level encryption. Clue: "The value of X in 2X + 5 = 17."',
             options: {
-                '11': 'future.hacking_security_node_2',
+                '6': 'future.hacking_security_node_2',
                 '12': 'future.hacking_fail_node',
-                '13': 'future.hacking_security_node_2'
+                '8': 'future.hacking_fail_node'
             }
         },
         hacking_security_node_2: {
-            text: 'Hacking Security Node 2: System level encryption. Clue: "The next number in the sequence: 1, 1, 2, 3, 5, ..."',
+            text: 'Hacking Security Node 2: System level encryption. Clue: "The binary representation of the decimal number 5."',
             options: {
-                '7': 'future.hacking_fail_node',
-                '8': 'future.hacking_puzzle',
-                '9': 'future.hacking_fail_node'
+                '101': 'future.hacking_security_node_3',
+                '011': 'future.hacking_fail_node',
+                '110': 'future.hacking_fail_node'
+            }
+        },
+        hacking_security_node_3: {
+            text: 'Hacking Security Node 3: Core encryption. Clue: "The square root of (81 / 9) * 4."',
+            options: {
+                '6': 'future.hacking_puzzle',
+                '3': 'future.hacking_fail_node',
+                '12': 'future.hacking_fail_node'
             }
         },
         hacking_fail_node: {
@@ -1179,9 +1421,19 @@ const gameData = {
             }
         },
         archive_search_antagonist: {
-            text: 'You search for "The Antagonist". The terminal returns a corrupted file. You can only make out a few words: "...a brilliant scientist... a terrible accident... a loved one lost to time... a desperate attempt to change the past..."',
+            text: 'You search for "The Antagonist". The terminal returns a file on Dr. Aris Thorne. It lists him as "Subject Zero" in the Great Chronos Incident. His research was banned, but he disappeared shortly after the lab explosion.',
             options: {
+                'read incident report': 'future.incident_report',
                 'leave': 'future.data_archives'
+            }
+        },
+        incident_report: {
+            text: 'The report describes a catastrophic failure in the temporal core. One casualty: Elara Thorne, age 8. Her molecular signature was found to be "non-local," meaning she exists in multiple time periods simultaneously. Thorne claimed he could "recall" her if he had enough power.',
+            options: { 'leave': 'future.data_archives' },
+            onEnter: () => {
+                if (!journal.includes("Dr. Thorne believes he can 'recall' Elara's non-local molecular signature if he has enough power.")) {
+                    journal.push("Dr. Thorne believes he can 'recall' Elara's non-local molecular signature if he has enough power.");
+                }
             }
         },
         archive_search_self: {
